@@ -99,7 +99,8 @@ sub require_uuid {
 =head2 edit_text [text] -> text
 
 Filters the given text through the user's C<$EDITOR> using
-L<Proc::InvokeEditor>.
+L<Proc::InvokeEditor>.  If C<$PROPHET_EDITOR> is specified,
+it is preferred to C<$EDITOR>.
 
 =cut
 
@@ -109,17 +110,21 @@ sub edit_text {
 
     # don't invoke the editor in a script, the test will appear to hang
     #die "Tried to invoke an editor in a test script!" if $ENV{IN_PROPHET_TEST_COMMAND};
-
+    
     require Proc::InvokeEditor;
-    return scalar Proc::InvokeEditor->edit($text);
+    my $pi      = Proc::InvokeEditor->new;
+    my $editors = $pi->editors;
+    unshift @$editors, $ENV{'PROPHET_EDITOR'} if exists $ENV{'PROPHET_EDITOR'};
+    $pi->editors($editors);
+
+    return scalar $pi->edit($text);
 }
-
-
 
 
 =head2 edit_hash hash => hashref, ordering => arrayref
 
 Filters the hash through the user's C<$EDITOR> using L<Proc::InvokeEditor>.
+If C<$PROPHET_EDITOR> is specified, it is preferred to C<$EDITOR>.
 
 No validation is done on the input or output.
 
