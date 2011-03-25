@@ -24,6 +24,12 @@ has context => (
 
 );
 
+has editor_var => (
+    is => 'rw',
+    isa => 'Str',
+    default => 'PROPHET_EDITOR',
+);
+
 sub ARG_TRANSLATIONS {
     my $self = shift;
     return (    'v' => 'verbose',
@@ -99,8 +105,9 @@ sub require_uuid {
 =head2 edit_text [text] -> text
 
 Filters the given text through the user's C<$EDITOR> using
-L<Proc::InvokeEditor>.  If C<$PROPHET_EDITOR> is specified,
-it is preferred to C<$EDITOR>.
+L<Proc::InvokeEditor>.  If C<$ENV{$self-E<gt>editor_var}> is specified
+(C<$self-E<gt>editor_var> defaults to PROPHET_EDITOR), it is favored
+over C<$EDITOR>.
 
 =cut
 
@@ -114,7 +121,8 @@ sub edit_text {
     require Proc::InvokeEditor;
     my $pi      = Proc::InvokeEditor->new;
     my $editors = $pi->editors;
-    unshift @$editors, $ENV{'PROPHET_EDITOR'} if exists $ENV{'PROPHET_EDITOR'};
+    my $editor  = $ENV{$self->editor_var};
+    unshift @$editors, $editor if defined $editor;
     $pi->editors($editors);
 
     return scalar $pi->edit($text);
@@ -124,7 +132,8 @@ sub edit_text {
 =head2 edit_hash hash => hashref, ordering => arrayref
 
 Filters the hash through the user's C<$EDITOR> using L<Proc::InvokeEditor>.
-If C<$PROPHET_EDITOR> is specified, it is preferred to C<$EDITOR>.
+If C<$ENV{$self-E<gt>editor_var}> is specified (C<$self-E<gt>editor_var>
+defaults to PROPHET_EDITOR), it is favored over C<$EDITOR>.
 
 No validation is done on the input or output.
 
