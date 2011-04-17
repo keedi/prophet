@@ -117,7 +117,7 @@ sub edit_text {
 
     # don't invoke the editor in a script, the test will appear to hang
     #die "Tried to invoke an editor in a test script!" if $ENV{IN_PROPHET_TEST_COMMAND};
-    
+
     require Proc::InvokeEditor;
     my $pi      = Proc::InvokeEditor->new;
     my $editors = $pi->editors;
