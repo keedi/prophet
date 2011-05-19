@@ -42,7 +42,7 @@ sub cgi {
 }
 
 our $MENU;
-sub nav {
+sub page_nav {
     my $self = shift;
     $MENU = shift if (@_);
     return $MENU;
@@ -122,9 +122,9 @@ template footer => sub { };
 template header => sub {
     my $self = shift;
     my $title = shift;
-if ($self->nav) {
+if ($self->page_nav) {
     div { { class is 'page-nav'};
-        outs_raw($self->nav->render_as_menubar) 
+        outs_raw($self->page_nav->render_as_menubar);
     };
     }
     h1 { $title };

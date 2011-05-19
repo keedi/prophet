@@ -32,7 +32,7 @@ has app_handle => (
 );
 
 has cgi        => ( isa => 'CGI|Undef',                is  => 'rw' );
-has nav        => ( isa => 'Prophet::Web::Menu|Undef', is  => 'rw' );
+has page_nav   => ( isa => 'Prophet::Web::Menu|Undef', is  => 'rw' );
 has read_only  => ( isa  => 'Bool',                        is => 'rw' );
 has static     => ( isa =>  'Bool',                        is => 'rw');
 has view_class => ( isa => 'Str',                       is  => 'rw' );
@@ -202,7 +202,8 @@ sub handle_request {
     my ( $self, $cgi ) = validate_pos( @_, { isa => 'Prophet::Server' }, { isa => 'CGI' } );
     $self->cgi($cgi);
     $self->log_request();
-    $self->nav( Prophet::Web::Menu->new( cgi => $self->cgi, server => $self) );
+    $self->page_nav(
+        Prophet::Web::Menu->new( cgi => $self->cgi, server => $self) );
     $self->result( Prophet::Web::Result->new() );
     if ( $ENV{'PROPHET_DEVEL'} ) {
         require Module::Refresh;
@@ -368,7 +369,7 @@ sub render_template {
     if ( Template::Declare->has_template($p) ) {
         $self->view_class->app_handle( $self->app_handle );
         $self->view_class->cgi( $self->cgi );
-        $self->view_class->nav( $self->nav);
+        $self->view_class->page_nav( $self->page_nav );
         $self->view_class->server($self);
         my $content = Template::Declare->show($p,@_);
         return $content;
