@@ -39,6 +39,7 @@ END_WARNING
     push @args, '--chmod=Da+rx,a+r';
 
     push @args, '--verbose' if $self->context->has_arg('verbose');
+    push @args, '--progress' if $self->context->has_arg('progress');
 
     # avoid edge cases when exporting replicas! still update files even
     # if they have the same size and time.
