@@ -58,6 +58,7 @@ lib/Prophet/CLI/Command/Show.pm
 lib/Prophet/CLI/Command/Update.pm
 lib/Prophet/CLI/Dispatcher.pm
 lib/Prophet/CLI/Dispatcher/Rule.pm
+lib/Prophet/CLI/Dispatcher/Rule/RecordId.pm
 lib/Prophet/CLI/MirrorCommand.pm
 lib/Prophet/CLI/Parameters.pm
 lib/Prophet/CLI/ProgressBar.pm
@@ -93,6 +94,7 @@ lib/Prophet/Resolver.pm
 lib/Prophet/Resolver/AlwaysSource.pm
 lib/Prophet/Resolver/AlwaysTarget.pm
 lib/Prophet/Resolver/Failed.pm
+lib/Prophet/Resolver/Fixup/MissingSourceOldValues.pm
 lib/Prophet/Resolver/FromResolutionDB.pm
 lib/Prophet/Resolver/IdenticalChanges.pm
 lib/Prophet/Resolver/Prompt.pm
@@ -196,6 +198,7 @@ t/sync_3party.t
 t/test_app.conf
 t/usage.t
 t/use.t
+t/util.t
 t/validate.t
 t/validation.t
 t/WebToy/bin/webtoy
