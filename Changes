@@ -1,3 +1,13 @@
+0.750
+ * --progress option to publish command enables rsync's publish flag (Lance Wicks)
+ * PROPHET_EDITOR variable allows customization of editor (Rob Hoelz)
+ * add the ability to color format strings (Christine Spang)
+ * allow one to configure the default server port with server.default-port (Christine Spang)
+ * server command now bails out with a helpful message when port in use (Christine Spang)
+ * don't blindly override $ENV{LESS} or $ENV{MORE} (Jesse Vincent)
+ * various performance improvements (Jesse Vincent)
+
+
 0.743
  * Fix test failures so install works again -- spang
 

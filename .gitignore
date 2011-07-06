@@ -6,3 +6,4 @@ Makefile.old
 .prove
 cover_db
 inc/
+MANIFEST.bak
