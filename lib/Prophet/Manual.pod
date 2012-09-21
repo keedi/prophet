@@ -1,6 +1,5 @@
-=head1 NAME
-
-Prophet::Manual - What Prophet is, how it works and how to use it
+# PODNAME: Prophet::Manual
+# ABSTRACT: What Prophet is, how it works and how to use it
 
 =head1 Introduction
 

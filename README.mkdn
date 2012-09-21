@@ -1,0 +1,47 @@
+# NAME
+
+Prophet - A distributed database system
+
+# VERSION
+
+version 0.751
+
+# DESCRIPTION
+
+Prophet is a distributed database system designed for small to medium
+scale social database applications.  Our early targets include things
+such as bug tracking.
+
+## Design goals
+
+- Arbitrary record schema
+- Replication
+- Disconnected operation
+- Peer to peer synchronization
+
+## Design constraints
+
+- Scaling
+
+We don't currently intend for the first implementation of Prophet to
+scale to databases with millions of rows or hundreds of concurrent
+users. There's nothing that makes the design infeasible, but the
+infrastructure necessary for such a system will...needlessly hamstring it.
+
+# AUTHORS
+
+- Jesse Vincent <jesse@bestpractical.com>
+- Chia-Liang Kao <clkao@bestpractical.com>
+
+# COPYRIGHT AND LICENSE
+
+This software is Copyright (c) 2009 by Best Practical Solutions.
+
+This is free software, licensed under:
+
+    The MIT (X11) License
+
+# BUGS AND LIMITATIONS
+
+You can make new bug reports, and view existing ones, through the
+web interface at [https://rt.cpan.org/Public/Dist/Display.html?Name=Prophet](https://rt.cpan.org/Public/Dist/Display.html?Name=Prophet).

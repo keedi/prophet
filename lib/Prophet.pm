@@ -1,20 +1,14 @@
+# ABSTRACT: A distributed database system
 use warnings;
 use strict;
 
 package Prophet;
-
-our $VERSION = '0.750';
-
-=head1 NAME
-
-Prophet
 
 =head1 DESCRIPTION
 
 Prophet is a distributed database system designed for small to medium
 scale social database applications.  Our early targets include things
 such as bug tracking.
-
 
 =head2 Design goals
 
@@ -29,8 +23,6 @@ such as bug tracking.
 =item Peer to peer synchronization
 
 =back
-
-
 
 =head2 Design constraints
 

@@ -1,4 +1,8 @@
 #!/usr/bin/env perl
+
+# PODNAME: prophet
+# ABSTRACT: main script
+
 use warnings;
 use strict;
 
