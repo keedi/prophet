@@ -8,9 +8,9 @@ version 0.751
 
 # DESCRIPTION
 
-Prophet is a distributed database system designed for small to medium
-scale social database applications.  Our early targets include things
-such as bug tracking.
+Prophet is a distributed database system designed for small to medium scale
+social database applications.  Our early targets include things such as bug
+tracking.
 
 ## Design goals
 
@@ -23,15 +23,16 @@ such as bug tracking.
 
 - Scaling
 
-We don't currently intend for the first implementation of Prophet to
-scale to databases with millions of rows or hundreds of concurrent
-users. There's nothing that makes the design infeasible, but the
-infrastructure necessary for such a system will...needlessly hamstring it.
+We don't currently intend for the first implementation of Prophet to scale to
+databases with millions of rows or hundreds of concurrent users. There's
+nothing that makes the design infeasible, but the infrastructure necessary for
+such a system will...needlessly hamstring it.
 
 # AUTHORS
 
 - Jesse Vincent <jesse@bestpractical.com>
 - Chia-Liang Kao <clkao@bestpractical.com>
+- Christine Spang <christine@spang.cc>
 
 # COPYRIGHT AND LICENSE
 

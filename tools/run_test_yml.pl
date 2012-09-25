@@ -4,7 +4,6 @@ use Prophet::Test::Arena;
 
 Prophet::Test::Arena->run_from_yaml;
 
-
 =head1 NAME
 
 run_test_yml - rerun recorded test

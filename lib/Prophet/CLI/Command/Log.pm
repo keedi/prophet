@@ -4,7 +4,7 @@ extends 'Prophet::CLI::Command';
 
 sub usage_msg {
     my $self = shift;
-    my $cmd = $self->cli->get_script_name;
+    my $cmd  = $self->cli->get_script_name;
 
     return <<"END_USAGE";
 usage: ${cmd}log --all              Show all entries
@@ -32,11 +32,13 @@ sub run {
 
     # --all overrides any other args
     if ($self->has_arg('all')) {
-        $self->set_arg('range', '0..'.$handle->latest_sequence_no);
+        $self->set_arg('range', '0..' . $handle->latest_sequence_no);
     }
 
-    my ($start, $end) = $self->has_arg('range') ? $self->parse_range_arg() :
-        ($handle->latest_sequence_no - 20, $handle->latest_sequence_no);
+    my ($start, $end) =
+        $self->has_arg('range')
+      ? $self->parse_range_arg()
+      : ($handle->latest_sequence_no - 20, $handle->latest_sequence_no);
 
     # parse_range returned undef
     die "Invalid range specified.\n" if !defined($start) || !defined($end);
@@ -58,45 +60,48 @@ sub run {
 
 }
 
-=head2 parse_range_arg
+=method parse_range_arg
 
-Parses the string in the 'range' arg into start and end sequence numbers
-and returns them in that order.
+Parses the string in the 'range' arg into start and end sequence numbers and
+returns them in that order.
 
 Returns undef if the string is malformed.
 
 =cut
 
 sub parse_range_arg {
-    my $self = shift;
+    my $self  = shift;
     my $range = $self->arg('range');
 
     # split on .. (denotes range)
     my @start_and_end = split(/\.\./, $range, 2);
     my ($start, $end);
     if (@start_and_end == 1) {
+
         # only one delimiter was specified -- this will be the
         # START; END defaults to the latest
-        $end = $self->handle->latest_sequence_no;
+        $end   = $self->handle->latest_sequence_no;
         $start = $self->_parse_delimiter($start_and_end[0]);
     } elsif (@start_and_end == 2) {
+
         # both delimiters were specified
         # parse the first one as START
         $start = $self->_parse_delimiter($start_and_end[0]);
+
         # parse the second one as END
         $end = $self->_parse_delimiter($start_and_end[1]);
     } else {
+
         # something wrong was specified
         return undef;
     }
     return ($start, $end);
 }
 
-=head2 _parse_delimiter($delim)
+=method _parse_delimiter($delim)
 
-Takes a delimiter string and parses into a sequence number. If
-it is not either an integer number or of the form LATEST~#,
-returns undef (invalid delimiter).
+Takes a delimiter string and parses into a sequence number. If it is not either
+an integer number or of the form LATEST~#, returns undef (invalid delimiter).
 
 =cut
 
@@ -104,9 +109,11 @@ sub _parse_delimiter {
     my ($self, $delim) = @_;
 
     if ($delim =~ m/^\d+$/) {
+
         # a sequence number was specified, just use it
         return $delim;
     } else {
+
         # try to parse what was given as LATEST~#
         # if it's just LATEST, we want only the last change
         my $offset;
@@ -126,21 +133,22 @@ sub handle_changeset {
         change_header => sub {
             my $change = shift;
             $self->change_header($change);
-        }
-    );
+        });
 
 }
+
 sub change_header {
     my $self   = shift;
     my $change = shift;
     return
-          " # "
-        . $change->record_type . " "
-            . $self->app_handle->handle->find_or_create_luid( uuid => $change->record_uuid )
-        . " (" . $change->record_uuid . ")\n";
+        " # "
+      . $change->record_type . " "
+      . $self->app_handle->handle->find_or_create_luid(
+        uuid => $change->record_uuid)
+      . " ("
+      . $change->record_uuid . ")\n";
 
 }
-
 
 __PACKAGE__->meta->make_immutable;
 no Any::Moose;

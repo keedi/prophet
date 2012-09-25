@@ -4,7 +4,7 @@ use Params::Validate;
 extends 'Prophet::CLI::Command';
 with 'Prophet::CLI::RecordCommand';
 
-sub ARG_TRANSLATIONS { shift->SUPER::ARG_TRANSLATIONS(),  'b' => 'batch' };
+sub ARG_TRANSLATIONS { shift->SUPER::ARG_TRANSLATIONS(), 'b' => 'batch' }
 
 sub usage_msg {
     my $self = shift;
@@ -24,10 +24,10 @@ sub run {
     my $record = $self->_load_record;
 
     print $self->stringify_props(
-        record => $record,
+        record  => $record,
         batch   => $self->has_arg('batch'),
         verbose => $self->has_arg('verbose'),
-    ); 
+    );
 }
 
 =head2 stringify_props
@@ -39,13 +39,16 @@ to the user. Also includes luid and uuid.
 
 sub stringify_props {
     my $self = shift;
-    my %args = validate( @_, {record => { ISA => 'Prophet::Record'},
-                            batch =>  1,
-                            verbose => 1});
+    my %args = validate(
+        @_,
+        {
+            record  => {ISA => 'Prophet::Record'},
+            batch   => 1,
+            verbose => 1
+        });
 
     my $record = $args{'record'};
-    my $props = $record->get_props;
-
+    my $props  = $record->get_props;
 
     # which props are we going to display?
     my @show_props;
@@ -57,15 +60,14 @@ sub stringify_props {
         if ($args{verbose}) {
             my %already_shown = map { $_ => 1 } @show_props;
             push @show_props, grep { !$already_shown{$_} }
-                              sort keys %$props;
+              sort keys %$props;
         }
-    }
-    else {
+    } else {
         @show_props = ('id', sort keys %$props);
     }
 
     # kind of ugly but it simplifies the code
-    $props->{id} = $record->luid ." (" . $record->uuid . ")";
+    $props->{id} = $record->luid . " (" . $record->uuid . ")";
 
     my @fields;
 
@@ -79,20 +81,17 @@ sub stringify_props {
 
     }
 
-
-    return join '',
-           map {
-               my ($field, $value) = @$_;
-               $self->format_prop(@$_);
-           }
-           @fields;
+    return join '', map {
+        my ($field, $value) = @$_;
+        $self->format_prop(@$_);
+    } @fields;
 }
 
 sub format_prop {
     my $self  = shift;
     my $field = shift;
     my $value = shift;
-    return "$field: $value\n"
+    return "$field: $value\n";
 }
 
 __PACKAGE__->meta->make_immutable;

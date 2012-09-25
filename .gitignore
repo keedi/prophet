@@ -4,3 +4,4 @@ Prophet-*
 .prove
 cover_db
 *.bak
+.tidyall.d
