@@ -32,7 +32,7 @@ $ENV{PROPHET_APP_CONFIG} = '';
 
     sub Test::More::diag {    # bad bad bad # convenient convenient convenient
         Test::More->builder->diag(@_)
-          if ($Test::Harness::Verbose || $ENV{'TEST_VERBOSE'});
+          if ( $Test::Harness::Verbose || $ENV{'TEST_VERBOSE'} );
     }
 }
 
@@ -66,11 +66,11 @@ This should be a non-interactive script found in F<t/scripts>.
 =cut
 
 sub set_editor_script {
-    my ($self, $script) = @_;
+    my ( $self, $script ) = @_;
 
     delete $ENV{'VISUAL'};    # Proc::InvokeEditor checks this first
     $ENV{'EDITOR'} =
-      "$^X " . Prophet::Util->catfile(getcwd(), 't', 'scripts', $script);
+      "$^X " . Prophet::Util->catfile( getcwd(), 't', 'scripts', $script );
     Test::More::diag "export EDITOR=" . $ENV{'EDITOR'} . "\n";
 }
 
@@ -82,7 +82,7 @@ sub import_extra {
 
     # Now, clobber Test::Builder::plan (if we got given a plan) so we
     # don't try to spit one out *again* later
-    if ($class->builder->has_plan) {
+    if ( $class->builder->has_plan ) {
         no warnings 'redefine';
         *Test::Builder::plan = sub { };
     }
@@ -107,13 +107,13 @@ sub in_gladiator (&) {
         warn 'Devel::Gladiator not found';
         return $code->();
     }
-    for (@{Devel::Gladiator::walk_arena()}) {
-        $types->{ref($_)}--;
+    for ( @{ Devel::Gladiator::walk_arena() } ) {
+        $types->{ ref($_) }--;
     }
 
     $code->();
-    for (@{Devel::Gladiator::walk_arena()}) {
-        $types->{ref($_)}++;
+    for ( @{ Devel::Gladiator::walk_arena() } ) {
+        $types->{ ref($_) }++;
     }
     map { $types->{$_} || delete $types->{$_} } keys %$types;
 
@@ -127,13 +127,13 @@ Returns a path on disk for where $username's replica is stored.
 
 sub repo_path_for {
     my $username = shift;
-    return File::Spec->catdir($REPO_BASE => $username);
+    return File::Spec->catdir( $REPO_BASE => $username );
 }
 
 sub config_file_for {
     my $username = shift;
 
-    return File::Spec->catdir($REPO_BASE, $username, 'config');
+    return File::Spec->catdir( $REPO_BASE, $username, 'config' );
 }
 
 =func repo_uri_for($username)
@@ -241,11 +241,11 @@ replica. $msg is optional and will be printed with the test if given.
 =cut
 
 sub ok_added_revisions (&$$) {
-    my ($code, $num, $msg) = @_;
+    my ( $code, $num, $msg ) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $last_rev = replica_last_rev();
     $code->();
-    is(replica_last_rev(), $last_rev + $num, $msg);
+    is( replica_last_rev(), $last_rev + $num, $msg );
 }
 
 =func serialize_conflict($conflict_obj)
@@ -281,17 +281,17 @@ The serialized version is a hash reference containing the following keys:
 =cut
 
 sub serialize_conflict {
-    my ($conflict_obj) = validate_pos(@_, {isa => 'Prophet::Conflict'});
+    my ($conflict_obj) = validate_pos( @_, { isa => 'Prophet::Conflict' } );
     my $conflicts;
-    for my $change (@{$conflict_obj->conflicting_changes}) {
-        $conflicts->{meta} = {original_source_uuid =>
-              $conflict_obj->changeset->original_source_uuid};
-        $conflicts->{records}->{$change->record_uuid} =
-          {change_type => $change->change_type,};
+    for my $change ( @{ $conflict_obj->conflicting_changes } ) {
+        $conflicts->{meta} = { original_source_uuid =>
+              $conflict_obj->changeset->original_source_uuid };
+        $conflicts->{records}->{ $change->record_uuid } =
+          { change_type => $change->change_type, };
 
-        for my $propchange (@{$change->prop_conflicts}) {
-            $conflicts->{records}->{$change->record_uuid}->{props}
-              ->{$propchange->name} = {
+        for my $propchange ( @{ $change->prop_conflicts } ) {
+            $conflicts->{records}->{ $change->record_uuid }->{props}
+              ->{ $propchange->name } = {
                 source_old => $propchange->source_old_value,
                 source_new => $propchange->source_new_value,
                 target_old => $propchange->target_value
@@ -310,7 +310,7 @@ for comparison in tests (a hash).
 =cut
 
 sub serialize_changeset {
-    my ($cs) = validate_pos(@_, {isa => 'Prophet::ChangeSet'});
+    my ($cs) = validate_pos( @_, { isa => 'Prophet::ChangeSet' } );
 
     return $cs->as_hash;
 }
@@ -336,8 +336,8 @@ sub run_command {
 
     my $original_stdout = *STDOUT;
     my $original_stderr = *STDERR;
-    open(my $out_handle, '>', \$output);
-    open(my $err_handle, '>', \$error);
+    open( my $out_handle, '>', \$output );
+    open( my $err_handle, '>', \$error );
     *STDOUT = $out_handle;
     *STDERR = $err_handle;
     $|++;    # autoflush
@@ -352,7 +352,7 @@ sub run_command {
     *STDOUT = $original_stdout;
     *STDERR = $original_stderr;
 
-    return wantarray ? ($output, $error) : $output;
+    return wantarray ? ( $output, $error ) : $output;
 }
 
 {
@@ -371,8 +371,8 @@ Loads and returns a record object for the record with the given type and uuid.
         require Prophet::Record;
         $connection ||= Prophet::CLI->new->handle;
         my $record =
-          Prophet::Record->new(handle => $connection, type => $type);
-        $record->load(uuid => $uuid);
+          Prophet::Record->new( handle => $connection, type => $type );
+        $record->load( uuid => $uuid );
         return $record;
     }
 }
@@ -383,10 +383,10 @@ Runs CODE as alice, bob, charlie or david.
 
 =cut
 
-sub as_alice (&)  { as_user(alice   => shift) }
-sub as_bob (&)    { as_user(bob     => shift) }
-sub as_charlie(&) { as_user(charlie => shift) }
-sub as_david(&)   { as_user(david   => shift) }
+sub as_alice (&)  { as_user( alice   => shift ) }
+sub as_bob (&)    { as_user( bob     => shift ) }
+sub as_charlie(&) { as_user( charlie => shift ) }
+sub as_david(&)   { as_user( david   => shift ) }
 
 # END {
 #     for (qw(alice bob charlie david)) {

@@ -7,7 +7,6 @@ extends 'Prophet::Record';
 
 use base qw/Prophet::Record/;
 
-
 sub new { shift->SUPER::new( @_, type => 'bug' ) }
 
 sub validate_prop_name {
@@ -26,6 +25,6 @@ sub canonicalize_prop_email {
     $args{props}->{email} = lc( $args{props}->{email} );
 }
 
-sub default_prop_status { 'new' }
+sub default_prop_status {'new'}
 
 1;

@@ -13,6 +13,7 @@ use JSON;
 A string representing who created this changeset.
 
 =cut
+
 has creator => (
     is  => 'rw',
     isa => 'Str|Undef',
@@ -24,11 +25,12 @@ A string representing the ISO 8601 date and time when this changeset was
 created (UTC).
 
 =cut
+
 has created => (
     is      => 'rw',
     isa     => 'Str|Undef',
     default => sub {
-        my ($sec, $min, $hour, $day, $month, $year) = gmtime;
+        my ( $sec, $min, $hour, $day, $month, $year ) = gmtime;
         $year += 1900;
         $month++;
         return sprintf '%04d-%02d-%02d %02d:%02d:%02d',
@@ -42,6 +44,7 @@ has created => (
 The uuid of the replica sending us the change.
 
 =cut
+
 has source_uuid => (
     is  => 'rw',
     isa => 'Str|Undef',
@@ -53,6 +56,7 @@ The changeset's sequence number (in subversion terms, revision #) on the
 replica sending us the changeset.
 
 =cut
+
 has sequence_no => (
     is  => 'rw',
     isa => 'Int|Undef',
@@ -63,6 +67,7 @@ has sequence_no => (
 The uuid of the replica where the change was authored.
 
 =cut
+
 has original_source_uuid => (
     is  => 'rw',
     isa => 'Str',
@@ -74,6 +79,7 @@ The changeset's sequence number (in subversion terms, revision #) on the
 replica where the change was originally created.
 
 =cut
+
 has original_sequence_no => (
     is  => 'rw',
     isa => 'Int|Undef',
@@ -84,6 +90,7 @@ has original_sequence_no => (
 A boolean value specifying whether this is a nullification changeset or not.
 
 =cut
+
 has is_nullification => (
     is  => 'rw',
     isa => 'Bool',
@@ -95,6 +102,7 @@ A boolean value specifying whether this is a conflict resolution changeset or
 not.
 
 =cut
+
 has is_resolution => (
     is  => 'rw',
     isa => 'Bool',
@@ -105,6 +113,7 @@ has is_resolution => (
 Returns an array of all the changes in the current changeset.
 
 =cut
+
 has changes => (
     is         => 'rw',
     isa        => 'ArrayRef',
@@ -122,11 +131,12 @@ has sha1 => (
 Returns true if this changeset has any changes.
 
 =cut
-sub has_changes { scalar @{$_[0]->changes} }
+
+sub has_changes { scalar @{ $_[0]->changes } }
 
 sub _add_change {
     my $self = shift;
-    push @{$self->changes}, @_;
+    push @{ $self->changes }, @_;
 }
 
 =method add_change { change => L<Prophet::Change> }
@@ -137,8 +147,8 @@ Adds a new change to this changeset.
 
 sub add_change {
     my $self = shift;
-    my %args = validate(@_, {change => {isa => 'Prophet::Change'}});
-    $self->_add_change($args{change});
+    my %args = validate( @_, { change => { isa => 'Prophet::Change' } } );
+    $self->_add_change( $args{change} );
 
 }
 
@@ -157,10 +167,10 @@ keyed on UUID.
 
 sub as_hash {
     my $self = shift;
-    my $as_hash = {map { $_ => $self->$_() } @SERIALIZE_PROPS};
+    my $as_hash = { map { $_ => $self->$_() } @SERIALIZE_PROPS };
 
-    for my $change ($self->changes) {
-        $as_hash->{changes}->{$change->record_uuid} = $change->as_hash;
+    for my $change ( $self->changes ) {
+        $as_hash->{changes}->{ $change->record_uuid } = $change->as_hash;
     }
 
     return $as_hash;
@@ -182,12 +192,15 @@ C<Prophet::ChangeSet-E<gt>new_from_hashref($ref_to_changeset_hash)>
 sub new_from_hashref {
     my $class   = shift;
     my $hashref = shift;
-    my $self    = $class->new({map { $_ => $hashref->{$_} } @SERIALIZE_PROPS});
+    my $self =
+      $class->new( { map { $_ => $hashref->{$_} } @SERIALIZE_PROPS } );
 
-    for my $change (keys %{$hashref->{changes}}) {
+    for my $change ( keys %{ $hashref->{changes} } ) {
         $self->add_change(
             change => Prophet::Change->new_from_hashref(
-                $change => $hashref->{changes}->{$change}));
+                $change => $hashref->{changes}->{$change}
+            )
+        );
     }
     return $self;
 }
@@ -222,19 +235,20 @@ sub as_string {
             change_formatter => undef,
             header_callback  => 0,
             skip_empty       => 0
-        });
+        }
+    );
 
     my $body = '';
 
-    for my $change ($self->changes) {
+    for my $change ( $self->changes ) {
         next if $args{change_filter} && !$args{change_filter}->($change);
-        if ($args{change_formatter}) {
+        if ( $args{change_formatter} ) {
             $body .=
               $args{change_formatter}
-              ->(change => $change, header_callback => $args{change_header});
+              ->( change => $change, header_callback => $args{change_header} );
         } else {
             $body .=
-              $change->as_string(header_callback => $args{change_header})
+              $change->as_string( header_callback => $args{change_header} )
               || next;
             $body .= "\n";
         }
@@ -259,7 +273,7 @@ Returns a string representing a description of this changeset.
 sub description_as_string {
     my $self = shift;
     sprintf " %s at %s\t\(%d@%s)\n",
-      ($self->creator || '(unknown)'),
+      ( $self->creator || '(unknown)' ),
       $self->created,
       $self->original_sequence_no,
       $self->original_source_uuid;
@@ -274,7 +288,7 @@ sub created_as_rfc3339 {
 
 sub calculate_sha1 {
     my $self = shift;
-    return sha1_hex($self->canonical_json_representation);
+    return sha1_hex( $self->canonical_json_representation );
 }
 
 sub canonical_json_representation {
@@ -285,7 +299,8 @@ sub canonical_json_representation {
     delete $hash_changeset->{'sequence_no'};
     delete $hash_changeset->{'source_uuid'};
 
-    return to_json($hash_changeset, {canonical => 1, pretty => 0, utf8 => 1});
+    return to_json( $hash_changeset,
+        { canonical => 1, pretty => 0, utf8 => 1 } );
 
 }
 

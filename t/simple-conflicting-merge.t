@@ -9,10 +9,10 @@ use Test::Exception;
 use_ok('Prophet::Replica');
 
 as_alice {
-    ok( run_command( 'init' ), 'replica init' );
-    ok( run_command( qw(create --type Bug -- --status new --from alice ) ),
+    ok( run_command('init'), 'replica init' );
+    ok( run_command(qw(create --type Bug -- --status new --from alice )),
         'Created a record as alice' );
-    my $output = run_command( qw(search --type Bug --regex .) );
+    my $output = run_command(qw(search --type Bug --regex .));
     like( $output, qr/new/, 'Found our record' );
 };
 
@@ -25,22 +25,25 @@ as_bob {
         'Sync ran ok!' );
 
     # check our local replicas
-    my $out = run_command( qw(search --type Bug --regex .) );
+    my $out = run_command(qw(search --type Bug --regex .));
     like( $out, qr/new/, "We have the one record from alice" );
     if ( $out =~ /'uuid': '(.*?)'/ ) {
         $record_id = $1;
     }
 
-    ok( run_command(
-            'update', '--type', 'Bug', '--uuid', $record_id,
-            '--', '--status' => 'stalled',
+    ok(
+        run_command(
+            'update',   '--type',
+            'Bug',      '--uuid',
+            $record_id, '--',
+            '--status' => 'stalled',
         ),
         'update record',
     );
-    $out = run_command(
-        'show', '--batch', '--type', 'Bug', '--uuid', $record_id );
+    $out =
+      run_command( 'show', '--batch', '--type', 'Bug', '--uuid', $record_id );
     my $alice_uuid = replica_uuid_for('alice');
-    my $expected = qr/id: (\d+) \($record_id\)
+    my $expected   = qr/id: (\d+) \($record_id\)
 creator: alice\@example.com
 from: alice
 original_replica: $alice_uuid
@@ -48,25 +51,29 @@ status: stalled/;
     like( $out, $expected, 'content is correct' );
 };
 
+my ( $alice, $bob, $alice_app, $bob_app );
 
-my ($alice, $bob, $alice_app, $bob_app);
 # This conflict, we can autoresolve
-as_bob { $bob_app = Prophet::CLI->new()->app_handle; $bob = $bob_app->handle;};
-as_alice { $alice_app = Prophet::CLI->new()->app_handle; $alice = $alice_app->handle};
-
+as_bob { $bob_app = Prophet::CLI->new()->app_handle; $bob = $bob_app->handle; };
+as_alice {
+    $alice_app = Prophet::CLI->new()->app_handle;
+    $alice     = $alice_app->handle;
+};
 
 as_alice {
-    ok( run_command(
-            'update', '--type', 'Bug', '--uuid',
-            $record_id, '--', '--status' => 'stalled',
+    ok(
+        run_command(
+            'update',   '--type',
+            'Bug',      '--uuid',
+            $record_id, '--',
+            '--status' => 'stalled',
         ),
         'update record as alice',
     );
-    my $output = run_command(
-        'show', '--type', 'Bug', '--uuid', $record_id, '--batch',
-    );
+    my $output =
+      run_command( 'show', '--type', 'Bug', '--uuid', $record_id, '--batch', );
     my $alice_uuid = replica_uuid_for('alice');
-    my $expected = qr/id: (\d+) \($record_id\)
+    my $expected   = qr/id: (\d+) \($record_id\)
 creator: alice\@example.com
 from: alice
 original_replica: $alice_uuid
@@ -82,7 +89,6 @@ as_bob {
     # XXX TODO: this should actually fail right now.
     # in perl code, we're going to run the merge (just as prophet-merge does)
 
-
     my $conflict_obj;
     lives_ok {
         $bob->import_changesets(
@@ -96,11 +102,12 @@ as_bob {
 
     isa_ok( $conflict_obj, 'Prophet::Conflict' );
 
-    my $conflicts = eval { serialize_conflict($conflict_obj)} ;
+    my $conflicts = eval { serialize_conflict($conflict_obj) };
 
     is_deeply(
         $conflicts,
-        {   meta    => { original_source_uuid => replica_uuid_for('alice') },
+        {
+            meta    => { original_source_uuid => replica_uuid_for('alice') },
             records => {
                 $record_id => {
                     change_type => 'update_file',
@@ -136,25 +143,30 @@ as_bob {
             changes              => {
                 $record_id => {
                     change_type  => 'update_file',
-                    record_type    => 'Bug',
-                    prop_changes => { status => { old_value => 'stalled', new_value => 'new' } }
+                    record_type  => 'Bug',
+                    prop_changes => {
+                        status =>
+                          { old_value => 'stalled', new_value => 'new' }
                     }
+                  }
 
             }
         }
     );
 
     # replay the last two changesets for bob's replica
-    my @changesets =  @{ $bob->fetch_changesets( after => ( $bob->latest_sequence_no - 2) ) };
+    my @changesets =
+      @{ $bob->fetch_changesets( after => ( $bob->latest_sequence_no - 2 ) ) };
 
     # is the second most recent change:
     my $applied_null    = shift @changesets;
     my $applied_as_hash = $applied_null->as_hash;
 
     # these aren't available yet in the memory-version
-    $applied_as_hash->{$_} = undef for qw(sequence_no source_uuid original_source_uuid original_sequence_no created);
+    $applied_as_hash->{$_} = undef
+      for
+      qw(sequence_no source_uuid original_source_uuid original_sequence_no created);
     is_deeply( $applied_as_hash, $null_as_hash );
-
 
     # is the most recent change:
     my $from_alice = shift @changesets;
@@ -175,12 +187,15 @@ as_bob {
             original_source_uuid => replica_uuid_for('alice'),
             changes              => {
                 $record_id => {
-                    record_type    => 'Bug',
+                    record_type  => 'Bug',
                     change_type  => 'update_file',
-                    prop_changes => { status => { old_value => 'new', new_value => 'stalled' } }
+                    prop_changes => {
+                        status =>
+                          { old_value => 'new', new_value => 'stalled' }
+                    }
                 },
 
-                }
+              }
 
         },
         "yay. the last rev from alice synced right"

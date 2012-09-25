@@ -10,7 +10,7 @@ sub fetch_local_metadata {
     my $self = shift;
     my $key  = shift;
     return $self->app_handle->handle->fetch_local_metadata(
-        $self->uuid . "-" . $key);
+        $self->uuid . "-" . $key );
 }
 
 sub store_local_metadata {
@@ -18,7 +18,7 @@ sub store_local_metadata {
     my $key   = shift;
     my $value = shift;
     return $self->app_handle->handle->store_local_metadata(
-        $self->uuid . "-" . $key => $value);
+        $self->uuid . "-" . $key => $value );
 }
 
 sub conflicts_from_changeset { return; }
@@ -41,7 +41,7 @@ Integrate all changes in this changeset.
 
 sub record_changes {
     my $self = shift;
-    my ($changeset) = validate_pos(@_, {isa => 'Prophet::ChangeSet'});
+    my ($changeset) = validate_pos( @_, { isa => 'Prophet::ChangeSet' } );
     $self->integrate_changes($changeset);
 }
 
@@ -50,10 +50,10 @@ sub begin_edit  { }
 sub commit_edit { }
 
 # foreign replicas never have a db uuid
-sub db_uuid { return undef }
+sub db_uuid {return}
 
 sub uuid_for_url {
-    my ($self, $url) = @_;
+    my ( $self, $url ) = @_;
     return $self->uuid_generator->create_string_from_url($url);
 }
 
@@ -96,7 +96,7 @@ sub prompt_for_login {
         username      => undef,
         password      => undef,
         secret_prompt => sub {
-            my ($uri, $username) = @_;
+            my ( $uri, $username ) = @_;
             return "Password for $username: @ $uri: ";
         },
         username_prompt => sub {
@@ -112,9 +112,9 @@ sub prompt_for_login {
     my $replica_token_key =
       'replica.' . $self->scheme . ":" . $self->{url} . '.secret_token';
 
-    if (!$args{username}) {
+    if ( !$args{username} ) {
         my $check_username =
-          $self->app_handle->config->get(key => $replica_username_key);
+          $self->app_handle->config->get( key => $replica_username_key );
         $args{username} = $check_username if $check_username;
     }
 
@@ -124,33 +124,33 @@ sub prompt_for_login {
     # XXX belongs to some CLI callback
     use Term::ReadKey;
     local $| = 1;
-    unless ($args{username}) {
-        print $args{username_prompt}($args{uri});
+    unless ( $args{username} ) {
+        print $args{username_prompt}( $args{uri} );
         ReadMode 1;
-        chomp($args{username} = ReadLine 0);
+        chomp( $args{username} = ReadLine 0 );
     }
 
-    if (my $check_password =
-        $self->app_handle->config->get(key => $replica_token_key))
+    if ( my $check_password =
+        $self->app_handle->config->get( key => $replica_token_key ) )
     {
         $args{password} = $check_password;
-    } elsif (!defined($args{password})) {
-        print $args{secret_prompt}($args{uri}, $args{username});
+    } elsif ( !defined( $args{password} ) ) {
+        print $args{secret_prompt}( $args{uri}, $args{username} );
         ReadMode 2;
-        chomp($args{password} = ReadLine 0);
+        chomp( $args{password} = ReadLine 0 );
         ReadMode 1;
         print "\n";
     }
     Prophet::CLI->start_pager() if ($was_in_pager);
 
-    return ($args{username}, $args{password});
+    return ( $args{username}, $args{password} );
 }
 
 sub log {
     my $self = shift;
-    my ($msg) = validate_pos(@_, 1);
-    Carp::confess unless ($self->app_handle);
-    $self->app_handle->log($self->url . ": " . $msg);
+    my ($msg) = validate_pos( @_, 1 );
+    Carp::confess unless ( $self->app_handle );
+    $self->app_handle->log( $self->url . ": " . $msg );
 }
 
 no Any::Moose;

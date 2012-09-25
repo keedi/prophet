@@ -7,7 +7,7 @@ use File::Path;
 use File::Spec;
 use Cwd;
 my $base = Cwd::abs_path( tempdir( CLEANUP => 1 ) );
-mkpath( File::Spec->catdir($base, 'foo', 'bar', 'baz', 'foo' ) ) or die $!; 
+mkpath( File::Spec->catdir( $base, 'foo', 'bar', 'baz', 'foo' ) ) or die $!;
 
 my %updir = (
 
@@ -34,7 +34,7 @@ for my $depth ( keys %updir ) {
     for my $path ( keys %{ $updir{$depth} } ) {
         my $value = join '/', $base, $updir{$depth}{$path};
         $path = join '/', $base, $path;
-        is( Prophet::Util->updir($path, $depth || () ),
+        is( Prophet::Util->updir( $path, $depth || () ),
             $value, "updir of $path with depth $depth is $value" );
     }
 }

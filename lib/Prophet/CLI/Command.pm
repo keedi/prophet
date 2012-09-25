@@ -8,7 +8,7 @@ has cli => (
     is       => 'rw',
     isa      => 'Prophet::CLI',
     weak_ref => 1,
-    handles  => [qw/app_handle handle config/,],
+    handles  => [ qw/app_handle handle config/, ],
 );
 
 has context => (
@@ -45,6 +45,7 @@ be translated when the command object is instantiated. If an arg already exists
 in the arg translation table, it is overwritten with the new value.
 
 =cut
+
 sub ARG_TRANSLATIONS {
     my $self = shift;
     return (
@@ -57,8 +58,8 @@ sub _translate_args {
     my $self         = shift;
     my %translations = $self->ARG_TRANSLATIONS;
 
-    for my $arg (keys %translations) {
-        $self->set_arg($translations{$arg}, $self->arg($arg))
+    for my $arg ( keys %translations ) {
+        $self->set_arg( $translations{$arg}, $self->arg($arg) )
           if $self->has_arg($arg);
     }
 }
@@ -92,9 +93,9 @@ the command's usage string if it is not set.
 sub require_uuid {
     my $self = shift;
 
-    if (!$self->has_uuid) {
+    if ( !$self->has_uuid ) {
         my $type = $self->type;
-        my $name = (split /::/, $self->meta->name)[-1];
+        my $name = ( split /::/, $self->meta->name )[-1];
         warn "No UUID or LUID given!\n";
         $self->print_usage;
     }
@@ -119,7 +120,7 @@ sub edit_text {
     require Proc::InvokeEditor;
     my $pi      = Proc::InvokeEditor->new;
     my $editors = $pi->editors;
-    my $editor  = $ENV{$self->editor_var};
+    my $editor  = $ENV{ $self->editor_var };
     unshift @$editors, $editor if defined $editor;
     $pi->editors($editors);
 
@@ -146,10 +147,10 @@ False values are not returned unless a prop is removed from the output.
 
 sub edit_hash {
     my $self = shift;
-    validate(@_, {hash => 1, ordering => 0});
+    validate( @_, { hash => 1, ordering => 0 } );
     my %args     = @_;
     my $hash     = $args{'hash'};
-    my @ordering = @{$args{'ordering'} || []};
+    my @ordering = @{ $args{'ordering'} || [] };
     my $record   = $self->_get_record_object;
     my @do_not_edit =
       $record->can('immutable_props') ? $record->immutable_props : ();
@@ -158,8 +159,8 @@ sub edit_hash {
 
         # add any keys not in @ordering to the end of it
         my %keys_in_ordering;
-        map { $keys_in_ordering{$_} = 1 if exists($hash->{$_}) } @ordering;
-        map { push @ordering, $_ if !exists($keys_in_ordering{$_}) }
+        map { $keys_in_ordering{$_} = 1 if exists( $hash->{$_} ) } @ordering;
+        map { push @ordering, $_ if !exists( $keys_in_ordering{$_} ) }
           keys %$hash;
     } else {
         @ordering = sort keys %$hash;
@@ -177,8 +178,8 @@ sub edit_hash {
 
     # parse the output
     my $filtered = {};
-    for my $line (split "\n", $output) {
-        if ($line =~ m/^([^:]+):\s*(.*)$/) {
+    for my $line ( split "\n", $output ) {
+        if ( $line =~ m/^([^:]+):\s*(.*)$/ ) {
             my $prop = $1;
             my $val  = $2;
 
@@ -189,8 +190,8 @@ sub edit_hash {
     no warnings 'uninitialized';
 
     # if a key is deleted intentionally, set its value to ''
-    for my $prop (keys %$hash) {
-        if (!exists $filtered->{$prop} and !exists $do_not_edit{$prop}) {
+    for my $prop ( keys %$hash ) {
+        if ( !exists $filtered->{$prop} and !exists $do_not_edit{$prop} ) {
             $filtered->{$prop} = '';
         }
     }
@@ -221,14 +222,16 @@ sub edit_props {
 
     my %props;
     if ($defaults) {
-        %props = (%{$defaults}, %{$self->props});
+        %props = ( %{$defaults}, %{ $self->props } );
     } else {
-        %props = %{$self->props};
+        %props = %{ $self->props };
     }
 
-    if ($self->has_arg($arg)) {
-        return $self->edit_hash(hash => \%props,
-            ordering => $args{'ordering'});
+    if ( $self->has_arg($arg) ) {
+        return $self->edit_hash(
+            hash     => \%props,
+            ordering => $args{'ordering'}
+        );
     }
 
     return \%props;
@@ -243,7 +246,7 @@ otherwise. (First choice is the default.)
 
 sub prompt_choices {
     my $self = shift;
-    my ($choice1, $choice2, $question) = @_;
+    my ( $choice1, $choice2, $question ) = @_;
 
     $choice1 = uc $choice1;    # default is capsed
     $choice2 = lc $choice2;    # non-default is lowercased
@@ -251,7 +254,7 @@ sub prompt_choices {
     Prophet::CLI->end_pager();
     print "$question [$choice1/$choice2]: ";
 
-    chomp(my $answer = <STDIN>);
+    chomp( my $answer = <STDIN> );
 
     Prophet::CLI->start_pager();
 
@@ -269,7 +272,7 @@ sub prompt_Yn {
     my $self = shift;
     my $msg  = shift;
 
-    return $self->prompt_choices('y', 'n', $msg);
+    return $self->prompt_choices( 'y', 'n', $msg );
 }
 
 # Create a new [replica] config file section for the given replica if
@@ -287,13 +290,14 @@ sub record_replica_in_config {
 
     my $found_prev_replica = $previous_sources_by_uuid{$replica_uuid};
 
-    if (!$found_prev_replica) {
+    if ( !$found_prev_replica ) {
 
         # replica section doesn't exist at all; create a new one
         my $url = $replica_url;
         $self->app_handle->config->group_set(
             $self->app_handle->config->replica_config_file,
-            [{
+            [
+                {
                     key   => "replica.$url.$url_variable",
                     value => $replica_url,
                 },
@@ -303,7 +307,7 @@ sub record_replica_in_config {
                 },
             ],
         );
-    } elsif ($found_prev_replica ne $replica_url) {
+    } elsif ( $found_prev_replica ne $replica_url ) {
 
         # We're publishing to a different place than where it was published
         # to previously--we don't want to end up with a multivalue in the
@@ -350,16 +354,16 @@ sub get_cmd_and_subcmd_names {
     my %args = @_;
 
     my $cmd              = $self->cli->get_script_name;
-    my @primary_commands = @{$self->context->primary_commands};
+    my @primary_commands = @{ $self->context->primary_commands };
 
     # if primary commands was only length 1, the type was not specified
     # and we should indicate that a type is expected
     push @primary_commands, '<record-type>'
       if @primary_commands <= 1 && !$args{no_type};
 
-    my $type_and_subcmd = join(q{ }, @primary_commands);
+    my $type_and_subcmd = join( q{ }, @primary_commands );
 
-    return ($cmd, $type_and_subcmd);
+    return ( $cmd, $type_and_subcmd );
 }
 
 __PACKAGE__->meta->make_immutable;

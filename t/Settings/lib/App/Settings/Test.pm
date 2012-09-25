@@ -9,7 +9,7 @@ use lib 't/Settings/lib';
 use App::Settings::CLI;
 
 our @EXPORT = qw/as_alice as_bob diag run_command like ok
-repo_uri_for replica_uuid/;
+  repo_uri_for replica_uuid/;
 
 Prophet::Test->import;
 

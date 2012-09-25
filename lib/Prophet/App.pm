@@ -12,12 +12,12 @@ has handle => (
     default => sub {
         my $self = shift;
 
-        if (defined $self->local_replica_url
-            && $self->local_replica_url !~ /^[\w\+]{2,}\:/)
+        if ( defined $self->local_replica_url
+            && $self->local_replica_url !~ /^[\w\+]{2,}\:/ )
         {
             # the reason why we need {2,} is to not match name on windows, e.g. C:\foo
             my $path = $self->local_replica_url;
-            $path = File::Spec->rel2abs(glob($path))
+            $path = File::Spec->rel2abs( glob($path) )
               unless File::Spec->file_name_is_absolute($path);
             $self->local_replica_url("file://$path");
         }
@@ -74,24 +74,24 @@ sub local_replica_url {
 sub require {
     my $self  = shift;
     my $class = shift;
-    $self->_require(module => $class);
+    $self->_require( module => $class );
 }
 
 sub try_to_require {
     my $self  = shift;
     my $class = shift;
-    $self->_require(module => $class, quiet => 1);
+    $self->_require( module => $class, quiet => 1 );
 }
 
 sub _require {
     my $self  = shift;
-    my %args  = (module => undef, quiet => undef, @_);
+    my %args  = ( module => undef, quiet => undef, @_ );
     my $class = $args{'module'};
 
     # Quick hack to silence warnings.
     # Maybe some dependencies were lost.
     unless ($class) {
-        warn sprintf("no class was given at %s line %d\n", (caller)[1, 2]);
+        warn sprintf( "no class was given at %s line %d\n", (caller)[ 1, 2 ] );
         return 0;
     }
 
@@ -110,14 +110,14 @@ sub _require {
     };
 
     my $error = $@;
-    if (my $message = $error) {
+    if ( my $message = $error ) {
         $message =~ s/ at .*?\n$//;
-        if ($args{'quiet'} and $message =~ /^Can't locate \Q$file\E/) {
+        if ( $args{'quiet'} and $message =~ /^Can't locate \Q$file\E/ ) {
             return 0;
-        } elsif ($error !~ /^Can't locate $file/) {
+        } elsif ( $error !~ /^Can't locate $file/ ) {
             die $error;
         } else {
-            warn sprintf("$message at %s line %d\n", (caller(1))[1, 2]);
+            warn sprintf( "$message at %s line %d\n", ( caller(1) )[ 1, 2 ] );
             return 0;
         }
     }
@@ -132,19 +132,19 @@ Helper function to test whether a given class has already been require'd.
 =cut
 
 sub already_required {
-    my ($self, $class) = @_;
+    my ( $self, $class ) = @_;
 
     return 0 if $class =~ /::$/;    # malformed class
 
-    my $path = join('/', split(/::/, $class)) . ".pm";
-    return ($INC{$path} ? 1 : 0);
+    my $path = join( '/', split( /::/, $class ) ) . ".pm";
+    return ( $INC{$path} ? 1 : 0 );
 }
 
 sub set_db_defaults {
     my $self     = shift;
     my $settings = $self->database_settings;
-    for my $name (keys %$settings) {
-        my ($uuid, @metadata) = @{$settings->{$name}};
+    for my $name ( keys %$settings ) {
+        my ( $uuid, @metadata ) = @{ $settings->{$name} };
 
         my $s = $self->setting(
             label   => $name,
@@ -158,22 +158,24 @@ sub set_db_defaults {
 
 sub setting {
     my $self = shift;
-    my %args = validate(@_, {uuid => 0, default => 0, label => 0});
+    my %args = validate( @_, { uuid => 0, default => 0, label => 0 } );
     require Prophet::DatabaseSetting;
 
-    my ($uuid, $default);
+    my ( $uuid, $default );
 
-    if ($args{uuid}) {
+    if ( $args{uuid} ) {
         $uuid    = $args{'uuid'};
         $default = $args{'default'};
-    } elsif ($args{'label'}) {
-        ($uuid, $default) = @{$self->database_settings->{$args{'label'}}};
+    } elsif ( $args{'label'} ) {
+        ( $uuid, $default ) =
+          @{ $self->database_settings->{ $args{'label'} } };
     }
     return Prophet::DatabaseSetting->new(
         handle  => $self->handle,
         uuid    => $uuid,
         default => $default,
-        label   => $args{label});
+        label   => $args{label}
+    );
 
 }
 
@@ -181,7 +183,7 @@ sub database_settings { {} }    # XXX wants a better name
 
 sub log_debug {
     my $self = shift;
-    return unless ($ENV{'PROPHET_DEBUG'});
+    return unless ( $ENV{'PROPHET_DEBUG'} );
     $self->log(@_);
 }
 
@@ -194,7 +196,7 @@ environmental variable is set).
 
 sub log {
     my $self = shift;
-    my ($msg) = validate_pos(@_, 1);
+    my ($msg) = validate_pos( @_, 1 );
     print STDERR $msg . "\n";    # if ($ENV{'PROPHET_DEBUG'});
 }
 
@@ -217,7 +219,7 @@ sub log_fatal {
 sub current_user_email {
     my $self = shift;
     return
-         $self->config->get(key => 'user.email-address')
+         $self->config->get( key => 'user.email-address' )
       || $ENV{'PROPHET_EMAIL'}
       || $ENV{'EMAIL'};
 
@@ -242,14 +244,14 @@ sub display_name_for_replica {
 
     return 'Unknown replica!' unless $uuid;
     my %possibilities =
-      $self->config->get_regexp(key => '^replica\..*\.uuid$');
+      $self->config->get_regexp( key => '^replica\..*\.uuid$' );
 
     # form a hash of uuid -> name
     my %sources_by_uuid = map {
         my $uuid = $possibilities{$_};
         $_ =~ /^replica\.(.*)\.uuid$/;
         my $name = $1;
-        ($uuid => $name);
+        ( $uuid => $name );
     } keys %possibilities;
     return exists $sources_by_uuid{$uuid} ? $sources_by_uuid{$uuid} : $uuid;
 }

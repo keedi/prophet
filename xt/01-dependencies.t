@@ -14,14 +14,14 @@ use Test::More;
 use File::Find;
 eval 'use Module::CoreList';
 if ($@) { plan skip_all => 'Module::CoreList not installed' }
-if (!-d 'inc/.author') {
+if ( !-d 'inc/.author' ) {
     plan skip_all => 'These tests only run for module authors';
 }
 
 plan 'no_plan';
 
 my %used;
-find(\&wanted, qw/ lib bin t /);
+find( \&wanted, qw/ lib bin t / );
 
 sub wanted {
     return unless -f $_;
@@ -32,7 +32,7 @@ sub wanted {
     # read in the file from disk
     my $filename = $_;
     local $/;
-    open(FILE, $filename) or return;
+    open( FILE, $filename ) or return;
     my $data = <FILE>;
     close(FILE);
 
@@ -42,7 +42,7 @@ sub wanted {
     # look for use and use base statements
     $used{$1}{$File::Find::name}++
       while $data =~ /^\s*(?:use|require)\s+([\w:]+)/gm;
-    while ($data =~ m|^\s*use base qw.([\w\s:]+)|gm) {
+    while ( $data =~ m|^\s*use base qw.([\w\s:]+)|gm ) {
         $used{$_}{$File::Find::name}++ for split ' ', $1;
     }
 }
@@ -50,34 +50,34 @@ sub wanted {
 my %required;
 {
     local $/;
-    ok(open(MAKEFILE, "Makefile.PL"), "Opened Makefile");
+    ok( open( MAKEFILE, "Makefile.PL" ), "Opened Makefile" );
     my $data = <MAKEFILE>;
     close(FILE);
-    while ($data =~
+    while ( $data =~
         /^\s*?(?:requires|recommends|).*?([\w:]+)'(?:\s*=>\s*['"]?([\d\.]+)['"]?)?.*?(?:#(.*))?$/gm
       )
     {
         $required{$1} = $2;
-        if (defined $3 and length $3) {
+        if ( defined $3 and length $3 ) {
             $required{$_} = undef for split ' ', $3;
         }
     }
 }
 
-for (sort keys %used) {
+for ( sort keys %used ) {
     my $first_in = Module::CoreList->first_release($_);
     next if defined $first_in and $first_in <= 5.00803;
     next if /^(SVB|App::WebToy|Prophet|inc|t)(::|$)/;
 
     #warn $_;
-    ok(exists $required{$_}, "$_ in Makefile.PL")
-      or diag("used in ", join ", ", sort keys %{$used{$_}});
+    ok( exists $required{$_}, "$_ in Makefile.PL" )
+      or diag( "used in ", join ", ", sort keys %{ $used{$_} } );
     delete $used{$_};
     delete $required{$_};
 }
 
-for (sort keys %required) {
-    my $first_in = Module::CoreList->first_release($_, $required{$_});
+for ( sort keys %required ) {
+    my $first_in = Module::CoreList->first_release( $_, $required{$_} );
     fail("Required module $_ (v. $required{$_}) is in core since $first_in")
       if defined $first_in and $first_in <= 5.008003;
 }

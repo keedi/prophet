@@ -13,6 +13,7 @@ compatability with earlier versions of Prophet).  If 2, it creates v4 and v5
 UUIDs.
 
 =cut
+
 # uuid_scheme: 1 - v1 and v3 uuids.
 #              2 - v4 and v5 uuids.
 has uuid_scheme => (
@@ -28,9 +29,9 @@ Creates and returns v1 or v4 UUIDs, depending on L</uuid_scheme>.
 
 sub create_str {
     my $self = shift;
-    if ($self->uuid_scheme == 1) {
+    if ( $self->uuid_scheme == 1 ) {
         return create_uuid_as_string(UUID_V1);
-    } elsif ($self->uuid_scheme == 2) {
+    } elsif ( $self->uuid_scheme == 2 ) {
         return create_uuid_as_string(UUID_V4);
     }
 }
@@ -46,13 +47,13 @@ sub create_string_from_url {
     my $self = shift;
     my $url  = shift;
     local $!;
-    if ($self->uuid_scheme == 1) {
+    if ( $self->uuid_scheme == 1 ) {
 
         # Yes, DNS, not URL. We screwed up when we first defined it
         # and it can't be safely changed once defined.
-        create_uuid_as_string(UUID_V3, UUID_NS_DNS, $url);
-    } elsif ($self->uuid_scheme == 2) {
-        create_uuid_as_string(UUID_V5, UUID_NS_URL, $url);
+        create_uuid_as_string( UUID_V3, UUID_NS_DNS, $url );
+    } elsif ( $self->uuid_scheme == 2 ) {
+        create_uuid_as_string( UUID_V5, UUID_NS_URL, $url );
     }
 }
 
@@ -77,7 +78,7 @@ sub from_safe_b64 {
 sub to_safe_b64 {
     my $self = shift;
     my $uuid = shift;
-    return urlsafe_b64encode($self->from_string($uuid));
+    return urlsafe_b64encode( $self->from_string($uuid) );
 }
 
 sub version {
@@ -90,7 +91,7 @@ sub set_uuid_scheme {
     my $self = shift;
     my $uuid = shift;
 
-    if ($self->version($uuid) <= 3) {
+    if ( $self->version($uuid) <= 3 ) {
         $self->uuid_scheme(1);
     } else {
         $self->uuid_scheme(2);

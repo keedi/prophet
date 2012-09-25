@@ -11,13 +11,11 @@ has class => ( isa => 'Str|Undef', is => 'rw' );
 has value => ( isa => 'Str|Undef', is => 'rw' );
 has type => ( isa => 'Str|Undef', is => 'rw', default => 'text');
 
-
-
 sub _render_attr {
-    my $self = shift;
-    my $attr = shift;
+    my $self  = shift;
+    my $attr  = shift;
     my $value = $self->$attr() || return '';
-    Prophet::Util::escape_utf8(\$value);
+    Prophet::Util::escape_utf8( \$value );
     return $attr . '="' . $value . '"';
 }
 
@@ -58,25 +56,23 @@ EOF
 
 sub render_input {
     my $self = shift;
-    
-    if ($self->type eq 'textarea') {
-            my $value = $self->value() || '';
-            Prophet::Util::escape_utf8(\$value);
 
-return <<EOF;
+    if ( $self->type eq 'textarea' ) {
+        my $value = $self->value() || '';
+        Prophet::Util::escape_utf8( \$value );
+
+        return <<EOF;
 <textarea @{[$self->render_name]} @{[$self->render_id]} @{[$self->render_class]} >@{[$value]}</textarea>
 EOF
     } else {
 
-return <<EOF;
+        return <<EOF;
 <input type="@{[$self->type]}" @{[$self->render_name]} @{[$self->render_id]} @{[$self->render_class]} @{[$self->render_value]} />
 EOF
 
     }
 
 }
-
-
 
 __PACKAGE__->meta->make_immutable;
 no Any::Moose;

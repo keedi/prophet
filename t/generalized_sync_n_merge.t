@@ -36,11 +36,14 @@ my $err = $@;
 ok( !$err, "There was no error ($err)" );
 my $Test = Test::Builder->new;
 if ( grep { !$_ } $Test->summary ) {
-    my $fname = join( '', sort map { substr( $_->name, 0, 1 ) } $arena->chickens ) . '.yml';
+    my $fname =
+      join( '', sort map { substr( $_->name, 0, 1 ) } $arena->chickens )
+      . '.yml';
     diag "test failed... dumping recipe to $fname";
     YAML::Syck::DumpFile(
         $fname,
-        {   chickens => [ map { $_->name } $arena->chickens ],
+        {
+            chickens => [ map { $_->name } $arena->chickens ],
             recipe   => $arena->{history}
         }
     );
@@ -61,7 +64,7 @@ for ( $arena->chickens ) {
             );
             $records->matching( sub {1} );
             use Data::Dumper;
-            for ($records->items) {
+            for ( $records->items ) {
                 warn $_->uuid . ' : ' . Dumper( $_->get_props );
             }
         }

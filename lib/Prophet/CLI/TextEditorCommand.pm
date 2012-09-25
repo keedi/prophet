@@ -44,9 +44,9 @@ a template section.
 
 sub build_template_section {
     my $self = shift;
-    my %args = validate(@_, {header => 1, data => 0});
-    return $self->build_separator($args{'header'}) . "\n\n"
-      . ($args{data} || '');
+    my %args = validate( @_, { header => 1, data => 0 } );
+    return $self->build_separator( $args{'header'} ) . "\n\n"
+      . ( $args{data} || '' );
 }
 
 =method try_to_edit template => \$tmpl [, record => $record ]
@@ -64,9 +64,10 @@ sub try_to_edit {
         {
             template => 1,
             record   => 0,
-        });
+        }
+    );
 
-    my $template = ${$args{template}};
+    my $template = ${ $args{template} };
 
     # do the edit
     my $updated = $self->edit_text($template);
@@ -76,7 +77,8 @@ sub try_to_edit {
     $self->process_template(
         template => $args{template},
         edited   => $updated,
-        record   => $args{record});
+        record   => $args{record}
+    );
 }
 
 =method handle_template_errors error => 'foo', template_ref => \$tmpl_str, bad_template => 'bar', rtype => 'ticket'
@@ -109,7 +111,8 @@ sub handle_template_errors {
             rtype          => 1,
             errors_pattern => 0,
             old_errors     => 0
-        });
+        }
+    );
     my $errors_pattern =
       defined $args{errors_pattern}
       ? $args{errors_pattern}
@@ -120,7 +123,7 @@ sub handle_template_errors {
     ) || die "Aborted.\n";
 
     # template is section-based
-    if (!defined $args{old_errors}) {
+    if ( !defined $args{old_errors} ) {
 
         # if the bad template already has an errors section in it, remove it
         $args{bad_template} =~ s/$errors_pattern.*?\n(?==== .*? ===\n)//s;
@@ -131,8 +134,8 @@ sub handle_template_errors {
         $args{bad_template} =~ s/\Q$args{old_errors}\E\n\n\n//;
     }
 
-    ${$args{'template_ref'}} =
-        ($errors_pattern ? "$errors_pattern\n\n" : '')
+    ${ $args{'template_ref'} } =
+        ( $errors_pattern ? "$errors_pattern\n\n" : '' )
       . $args{error}
       . "\n\n\n"
       . $args{bad_template};

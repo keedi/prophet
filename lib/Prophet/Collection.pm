@@ -14,8 +14,8 @@ has app_handle => (
     isa      => 'Prophet::App|Undef',
     required => 0,
     trigger  => sub {
-        my ($self, $app) = @_;
-        $self->handle($app->handle);
+        my ( $self, $app ) = @_;
+        $self->handle( $app->handle );
     },
 );
 
@@ -30,7 +30,8 @@ has type => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        $self->record_class->new(app_handle => $self->app_handle)->record_type;
+        $self->record_class->new( app_handle => $self->app_handle )
+          ->record_type;
     },
 );
 
@@ -39,6 +40,7 @@ has type => (
 Returns a reference to an array of all the items found
 
 =cut
+
 has items => (
     is         => 'rw',
     isa        => 'ArrayRef',
@@ -46,13 +48,12 @@ has items => (
     auto_deref => 1,
 );
 
-sub count { scalar @{$_[0]->items} }
+sub count { scalar @{ $_[0]->items } }
 
 sub add_item {
     my $self = shift;
-    push @{$self->items}, @_;
+    push @{ $self->items }, @_;
 }
-
 
 =method matching $CODEREF
 
@@ -77,7 +78,7 @@ sub matching {
     # run coderef against each item;
     # if it matches, add it to items
     for my $record (@$records) {
-        $self->add_item($record) if ($coderef->($record));
+        $self->add_item($record) if ( $coderef->($record) );
     }
 
     # XXX TODO return a count of items found

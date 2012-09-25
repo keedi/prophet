@@ -5,7 +5,7 @@ with 'Prophet::CLI::RecordCommand';
 
 sub usage_msg {
     my $self = shift;
-    my ($cmd, $type_and_subcmd) = $self->get_cmd_and_subcmd_names;
+    my ( $cmd, $type_and_subcmd ) = $self->get_cmd_and_subcmd_names;
 
     return <<"END_USAGE";
 usage: ${cmd}${type_and_subcmd} <id>

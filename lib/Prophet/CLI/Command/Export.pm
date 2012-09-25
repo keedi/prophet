@@ -4,7 +4,7 @@ extends 'Prophet::CLI::Command';
 
 sub usage_msg {
     my $self = shift;
-    my $cmd = $self->cli->get_script_name;
+    my $cmd  = $self->cli->get_script_name;
 
     return <<"END_USAGE";
 usage: ${cmd}export --path <path> [--format feed]
@@ -17,21 +17,23 @@ sub run {
 
     $self->print_usage if $self->has_arg('h');
 
-    unless ($self->context->has_arg('path')) {
+    unless ( $self->context->has_arg('path') ) {
         warn "No --path argument specified!\n";
         $self->print_usage;
     }
 
-    if ($self->context->has_arg('format') && ($self->context->arg('format') eq 'feed') ){
+    if ( $self->context->has_arg('format')
+        && ( $self->context->arg('format') eq 'feed' ) )
+    {
         $class = 'Prophet::ReplicaFeedExporter';
-    }
-    else {
+    } else {
         $class = 'Prophet::ReplicaExporter';
     }
 
-    $self->app_handle->require ($class);
+    $self->app_handle->require($class);
     my $exporter = $class->new(
-        {   target_path    =>  $self->context->arg('path'),
+        {
+            target_path    => $self->context->arg('path'),
             source_replica => $self->app_handle->handle,
             app_handle     => $self->app_handle
         }

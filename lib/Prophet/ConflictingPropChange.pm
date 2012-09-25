@@ -9,6 +9,7 @@ use Any::Moose;
 The property name for the conflict in question
 
 =cut
+
 has name => (
     is  => 'rw',
     isa => 'Str',
@@ -19,6 +20,7 @@ has name => (
 The inital (old) state from the change being merged in
 
 =cut
+
 has source_old_value => (
     is  => 'rw',
     isa => 'Str|Undef',
@@ -29,6 +31,7 @@ has source_old_value => (
 The current target-replica value of the property being merged.
 
 =cut
+
 has target_value => (
     is  => 'rw',
     isa => 'Str|Undef',
@@ -39,6 +42,7 @@ has target_value => (
 The final (new) state of the property from the change being merged in.
 
 =cut
+
 has source_new_value => (
     is  => 'rw',
     isa => 'Str|Undef',

@@ -5,7 +5,8 @@ use Test::More tests => 23;
 use File::Temp qw'tempdir';
 
 use_ok('Prophet::CLI');
-$ENV{'PROPHET_REPO'} = tempdir( CLEANUP => ! $ENV{PROPHET_DEBUG}  ) . '/repo-' . $$;
+$ENV{'PROPHET_REPO'} =
+  tempdir( CLEANUP => !$ENV{PROPHET_DEBUG} ) . '/repo-' . $$;
 my $cli = Prophet::CLI->new();
 my $cxn = $cli->handle;
 
@@ -24,9 +25,11 @@ is( $record->prop('age'), 32 );
 
 my $kaia = $record->create( props => { name => 'Kaia', age => 24 } );
 ok($kaia);
-my $mao = $record->create( props => { name => 'Mao', age => 0.7, species => 'cat' } );
+my $mao =
+  $record->create( props => { name => 'Mao', age => 0.7, species => 'cat' } );
 ok($mao);
-my $mei = $record->create( props => { name => 'Mei', age => "0.7", species => 'cat' } );
+my $mei = $record->create(
+    props => { name => 'Mei', age => "0.7", species => 'cat' } );
 ok($mei);
 use_ok('Prophet::Collection');
 
@@ -37,7 +40,7 @@ is_deeply( [ sort map { $_->prop('name') } @$people ], [qw(Jesse Kaia)] );
 
 my $cats = Prophet::Collection->new( handle => $cxn, type => 'Person' );
 $cats->matching( sub { ( shift->prop('species') || '' ) eq 'cat' } );
-is( $cats->count , 2 );
+is( $cats->count, 2 );
 for (@$cats) {
     is( $_->prop('age'), "0.7" );
 }

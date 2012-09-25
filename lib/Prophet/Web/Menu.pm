@@ -11,6 +11,7 @@ has cgi => (isa =>'CGI', is=>'ro');
 Sets or returns the string that the menu item will be displayed as.
 
 =cut
+
 has label => ( isa => 'Str', is => 'rw');
 
 =attr parent [MENU]
@@ -19,6 +20,7 @@ Gets or sets the parent L<Prophet::Web::Menu> of this item; this defaults to
 null. This ensures that the reference is weakened.
 
 =cut
+
 has parent => ( isa => 'Prophet::Web::Menu|Undef', is => 'rw', weak_ref => 1);
 
 =attr sort_order [NUMBER]
@@ -27,6 +29,7 @@ Gets or sets the sort order of the item, as it will be displayed under the
 parent.  This defaults to adding onto the end.
 
 =cut
+
 has sort_order => ( isa => 'Str', is => 'rw');
 has render_children_inline => ( isa => 'Bool', is => 'rw', default => 0);
 has url => ( isa => 'Str', is => 'bare');
@@ -36,8 +39,8 @@ has url => ( isa => 'Str', is => 'bare');
 Get or set the frame or pseudo-target for this link. something like L<_blank>
 
 =cut
-has target => ( isa => 'Str', is => 'rw');
 
+has target => ( isa => 'Str', is => 'rw');
 
 =head2 class [STRING]
 
@@ -45,6 +48,7 @@ Gets or sets the CSS class the link should have in addition to the default
 classes.  This is only used if C<link> isn't specified.
 
 =cut
+
 has class => ( isa => 'Str', is => 'rw');
 has escape_label => ( isa => 'Bool', is => 'rw');
 has server => (
@@ -64,7 +68,7 @@ subroutines with the respective name below for each option's use.
 
 sub new {
     my $package = shift;
-    my $args = ref($_[0]) eq 'HASH' ? shift @_ : {@_};
+    my $args = ref( $_[0] ) eq 'HASH' ? shift @_ : {@_};
 
     my $parent = delete $args->{'parent'};
 
@@ -90,14 +94,14 @@ sub url {
     $self->{url} = shift if @_;
 
     $self->{url} =
-      URI->new_abs($self->{url}, $self->parent->url . "/")->as_string
+      URI->new_abs( $self->{url}, $self->parent->url . "/" )->as_string
       if defined $self->{url}
       and $self->parent
       and $self->parent->url;
 
     $self->{url} =~ s!///!/! if $self->{url};
 
-    return $self->server->make_link_relative($self->{url});
+    return $self->server->make_link_relative( $self->{url} );
 }
 
 =method active [BOOLEAN]
@@ -111,7 +115,7 @@ sub active {
     my $self = shift;
     if (@_) {
         $self->{active} = shift;
-        $self->parent->active($self->{active}) if defined $self->parent;
+        $self->parent->active( $self->{active} ) if defined $self->parent;
     }
     return $self->{active};
 }
@@ -134,25 +138,27 @@ sub child {
     my $proto = ref $self || $self;
 
     if (@_) {
-        $self->{children}{$key} = $proto->new({
+        $self->{children}{$key} = $proto->new(
+            {
                 parent     => $self,
                 cgi        => $self->cgi,
                 sort_order => (
                     $self->{children}{$key}{sort_order}
-                      || scalar values %{$self->{children}}
+                      || scalar values %{ $self->{children} }
                 ),
                 label        => $key,
                 escape_label => 1,
                 server       => $self->server,
                 @_
-            });
+            }
+        );
 
         # Figure out the URL
         my $child = $self->{children}{$key};
         my $url   = $child->url;
 
         # Activate it
-        if (defined $url and length $url and $self->cgi->path_info) {
+        if ( defined $url and length $url and $self->cgi->path_info ) {
 
             # XXX TODO cleanup for mod_perl
             my $base_path = $self->cgi->path_info;
@@ -162,7 +168,7 @@ sub child {
             $base_path =~ s/\/+$//;
             $url       =~ s/\/+$//;
 
-            if ($url eq $base_path) {
+            if ( $url eq $base_path ) {
                 $self->{children}{$key}->active(1);
             }
         }
@@ -179,10 +185,10 @@ Returns the first active child node, or C<undef> is there is none.
 
 sub active_child {
     my $self = shift;
-    foreach my $kid ($self->children) {
+    foreach my $kid ( $self->children ) {
         return $kid if $kid->active;
     }
-    return undef;
+    return;
 }
 
 =method delete KEY
@@ -206,7 +212,7 @@ context, or as an array reference in scalar context.
 
 sub children {
     my $self = shift;
-    my @kids = values %{$self->{children} || {}};
+    my @kids = values %{ $self->{children} || {} };
     @kids = sort { $a->sort_order <=> $b->sort_order } @kids;
     return wantarray ? @kids : \@kids;
 }
@@ -224,7 +230,7 @@ sub render_as_menubar {
 
     my $buffer = '';
     $buffer .=
-      $self->_render_as_menu_item(class => "page-nav sf-menu", id => $id);
+      $self->_render_as_menu_item( class => "page-nav sf-menu", id => $id );
 
     $buffer .= q|<script type="text/javascript"> 
                     $(document).ready(function(){ $("ul.page-nav").superfish(); });
@@ -234,7 +240,7 @@ sub render_as_menubar {
 
 sub _render_as_menu_item {
     my $self = shift;
-    my %args = (class => '', first => 0, id => undef, @_);
+    my %args = ( class => '', first => 0, id => undef, @_ );
     my @kids = $self->children or return '';
 
     my $buffer = '';
@@ -246,20 +252,20 @@ sub _render_as_menu_item {
 
         # We want to render the children of this child inline, so close
         # children.
-        if ($kid->render_children_inline and $kid->children) {
+        if ( $kid->render_children_inline and $kid->children ) {
 
             my @classes = ();
             push @classes, 'active' if $kid->active;
 
             $buffer .= $kid->as_link;
             $buffer .=
-              $kid->_render_as_menu_item(first => ($count == 1 ? 1 : 0));
+              $kid->_render_as_menu_item( first => ( $count == 1 ? 1 : 0 ) );
         }
 
         # It's a normal child
         else {
             $buffer .= (qq(<li>));
-            $buffer .= ($kid->as_link);
+            $buffer .= ( $kid->as_link );
             $buffer .= $kid->_render_as_menu_item();
             $buffer .= qq{</li>\n};
         }
@@ -281,13 +287,13 @@ If there's no C</url> and no C</link>, renders just the label.
 sub as_link {
     my $self = shift;
 
-    if ($self->url) {
+    if ( $self->url ) {
         my $label = $self->label;
-        Prophet::Util::escape_utf8(\$label) if ($self->escape_label);
+        Prophet::Util::escape_utf8( \$label ) if ( $self->escape_label );
         return
             qq{<a href="@{[$self->url]}"}
-          . ($self->target ? qq{ target="@{[$self->target]}" } : '')
-          . ($self->class  ? qq{ class="@{[$self->class]}" }   : '') . ">"
+          . ( $self->target ? qq{ target="@{[$self->target]}" } : '' )
+          . ( $self->class  ? qq{ class="@{[$self->class]}" }   : '' ) . ">"
           . $label . '</a>'
 
           ;

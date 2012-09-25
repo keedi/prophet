@@ -9,11 +9,8 @@ as_alice {
     my ( $output, $error ) =
       run_command( qw/create --type Bug --/, 'summary=foo bar' );
     our $bug_id;
-    like(
-        $output,
-        qr/Created Bug \d+ \((\S+)\)(?{ $bug_id = $1 })/,
-        "created bug"
-    );
+    like( $output, qr/Created Bug \d+ \((\S+)\)(?{ $bug_id = $1 })/,
+        "created bug" );
     use_ok('Prophet::CLI');
     my $a = Prophet::CLI->new();
     can_ok( $a,             'app_handle' );
@@ -33,17 +30,19 @@ as_alice {
         {
 
             # this alias is bad, please don't use it in real life
-            cmd => [ 'add', 'balanced_1=search --type Bug -- summary="foo bar"' ],
+            cmd =>
+              [ 'add', 'balanced_1=search --type Bug -- summary="foo bar"' ],
             comment => 'add a new alias',
         },
         {
 
             # this alias is bad, please don't use it in real life
-            cmd => [ 'add', 'balanced_2=search --type Bug -- summary "foo bar"' ],
+            cmd =>
+              [ 'add', 'balanced_2=search --type Bug -- summary "foo bar"' ],
             comment => 'add a new alias',
         },
         {
-            cmd => [ 'add', 's=search' ],
+            cmd     => [ 'add', 's=search' ],
             comment => 'add a new alias',
         }
     );
@@ -59,13 +58,15 @@ as_alice {
         like( $got_error,  $exp_error,  $item->{comment} . ' (STDERR)' );
     }
 
-    ($output, $error) = run_command(qw/search --type Bug -- summary/, 'foo bar' );
+    ( $output, $error ) =
+      run_command( qw/search --type Bug -- summary/, 'foo bar' );
     ($output) = run_command('balanced_1');
     like( $output, qr/$bug_id/, 'quote in aliase like --summary="foo bar"' );
     ($output) = run_command('balanced_2');
     like( $output, qr/$bug_id/, 'quote in aliase like --summary "foo bar"' );
 
-    ($output, $error) = run_command(qw(s --type Bug), "--summary=foo bar");
-    like( $output, qr/$bug_id/, 'Arguments to aliases with spaces are preserved' );
+    ( $output, $error ) = run_command( qw(s --type Bug), "--summary=foo bar" );
+    like( $output, qr/$bug_id/,
+        'Arguments to aliases with spaces are preserved' );
     diag($error) if $error;
 };

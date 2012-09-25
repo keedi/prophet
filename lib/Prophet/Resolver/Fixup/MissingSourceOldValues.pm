@@ -10,8 +10,9 @@ sub run {
     my $resolution = Prophet::Change->new_from_conflict($conflicting_change);
     for my $prop_conflict ( @{ $conflicting_change->prop_conflicts } ) {
 
-        if ( defined $prop_conflict->source_old_value 
-            && $prop_conflict->source_old_value ne '' ) {
+        if ( defined $prop_conflict->source_old_value
+            && $prop_conflict->source_old_value ne '' )
+        {
             return 0;
         }
 

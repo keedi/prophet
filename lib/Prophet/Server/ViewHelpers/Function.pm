@@ -3,8 +3,8 @@ package Prophet::Server::ViewHelpers::Function;
 use Template::Declare::Tags;
 
 BEGIN {
-    delete ${__PACKAGE__ . "::"}{meta};
-    delete ${__PACKAGE__ . "::"}{with};
+    delete ${ __PACKAGE__ . "::" }{meta};
+    delete ${ __PACKAGE__ . "::" }{with};
 }
 
 use Any::Moose;
@@ -16,7 +16,7 @@ has record => (
 );
 
 has action => (
-    isa => (enum [qw(create update delete)]),
+    isa => ( enum [qw(create update delete)] ),
     is => 'ro'
 );
 
@@ -35,9 +35,9 @@ has name => (
 
 sub new {
     my $self = shift->SUPER::new(@_);
-    $self->name(($self->record->loaded ? $self->record->uuid : 'new') . "-"
-          . $self->action)
-      unless ($self->name);
+    $self->name( ( $self->record->loaded ? $self->record->uuid : 'new' ) . "-"
+          . $self->action )
+      unless ( $self->name );
     return $self;
 }
 
@@ -47,7 +47,7 @@ sub render {
         order        => $self->order,
         action       => $self->action,
         type         => $self->record->type,
-        class        => ref($self->record),
+        class        => ref( $self->record ),
         uuid         => $self->record->uuid,
         validate     => $self->validate,
         canonicalize => $self->canonicalize,
@@ -55,7 +55,7 @@ sub render {
     );
 
     my $string = "|"
-      . join("|", map { $bits{$_} ? $_ . "=" . $bits{$_} : '' } keys %bits)
+      . join( "|", map { $bits{$_} ? $_ . "=" . $bits{$_} : '' } keys %bits )
       . "|";
 
     outs_raw(
@@ -63,7 +63,7 @@ sub render {
     );
 }
 
-__PACKAGE__->meta->make_immutable(inline_constructor => 0);
+__PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 no Any::Moose;
 1;
 

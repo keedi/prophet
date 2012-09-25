@@ -11,10 +11,10 @@ has functions => (
     default => sub { {} },
 );
 
-sub get    { $_[0]->functions->{$_[1]} }
-sub set    { $_[0]->functions->{$_[1]} = $_[2] }
-sub exists { exists $_[0]->functions->{$_[1]} }
-sub items  { keys %{$_[0]->functions} }
+sub get    { $_[0]->functions->{ $_[1] } }
+sub set    { $_[0]->functions->{ $_[1] } = $_[2] }
+sub exists { exists $_[0]->functions->{ $_[1] } }
+sub items  { keys %{ $_[0]->functions } }
 
 __PACKAGE__->meta->make_immutable;
 no Any::Moose;

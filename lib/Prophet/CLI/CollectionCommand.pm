@@ -6,11 +6,10 @@ use Params::Validate;
 
 sub get_collection_object {
     my $self = shift;
-    my %args = validate(@_, {
-        type => { default => $self->type },
-    });
+    my %args = validate( @_, { type => { default => $self->type }, } );
 
-    my $class = $self->_get_record_object(type => $args{type})->collection_class;
+    my $class =
+      $self->_get_record_object( type => $args{type} )->collection_class;
     Prophet::App->require($class);
 
     my $records = $class->new(

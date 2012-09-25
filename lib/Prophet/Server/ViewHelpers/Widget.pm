@@ -3,8 +3,8 @@ package Prophet::Server::ViewHelpers::Widget;
 use Template::Declare::Tags;
 
 BEGIN {
-    delete ${__PACKAGE__ . "::"}{meta};
-    delete ${__PACKAGE__ . "::"}{with};
+    delete ${ __PACKAGE__ . "::" }{meta};
+    delete ${ __PACKAGE__ . "::" }{with};
 }
 
 use Any::Moose;
@@ -35,20 +35,20 @@ sub render {
 
     my $value;
 
-    if (defined $self->default) {
+    if ( defined $self->default ) {
         $value = $self->default;
-    } elsif ($self->function->action eq 'create') {
-        if (my $method =
-            $self->function->record->can('default_prop_' . $self->prop))
+    } elsif ( $self->function->action eq 'create' ) {
+        if ( my $method =
+            $self->function->record->can( 'default_prop_' . $self->prop ) )
         {
-            $value = $method->($self->function->record);
+            $value = $method->( $self->function->record );
         } else {
             $value = '';
         }
-    } elsif ($self->function->action eq 'update'
-        && $self->function->record->loaded)
+    } elsif ( $self->function->action eq 'update'
+        && $self->function->record->loaded )
     {
-        $value = $self->function->record->prop($self->prop) || '';
+        $value = $self->function->record->prop( $self->prop ) || '';
     } else {
         $value = '';
     }
@@ -64,9 +64,10 @@ sub render {
               . ' function-'
               . $self->function->name,
             value => $value,
-            ($self->type ? (type => $self->type) : ())
+            ( $self->type ? ( type => $self->type ) : () )
 
-        ));
+        )
+    );
 
     my $orig = Prophet::Web::Field->new(
         name  => "original-value-" . $unique_name,
@@ -74,9 +75,9 @@ sub render {
         type  => 'hidden'
     );
 
-    outs_raw($self->field->render);
-    outs_raw($orig->render_input);
-    if ($self->autocomplete) {
+    outs_raw( $self->field->render );
+    outs_raw( $orig->render_input );
+    if ( $self->autocomplete ) {
         $self->_render_autocompleter();
     }
 
@@ -93,7 +94,7 @@ sub _render_autocompleter {
         extraParams: {
                     "function": "' . $self->field->name . '",
                     "class": "' . ref($record) . '",
-                    "uuid": "' . ($record->uuid || '') . '",
+                    "uuid": "' . ( $record->uuid || '' ) . '",
                     "type": "' . $record->type . '",
                     "prop": "' . $self->prop . '" } }   ); </script> '
     );

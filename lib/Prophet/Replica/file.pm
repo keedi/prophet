@@ -1,20 +1,22 @@
 package Prophet::Replica::file;
 use Any::Moose;
 extends 'Prophet::Replica::prophet';
-sub scheme { 'file' }
+sub scheme {'file'}
 
 sub replica_exists {
     my $self = shift;
     return 0 unless defined $self->fs_root && -d $self->fs_root;
-    return 0 unless -e Prophet::Util->catfile( $self->fs_root => 'database-uuid' );
+    return 0
+      unless -e Prophet::Util->catfile( $self->fs_root => 'database-uuid' );
     return 1;
 }
 
 sub new {
     my $class = shift;
-    my %args = @_;
-    
-    my @probe_types = ($args{app_handle}->default_replica_type, 'file', 'sqlite');
+    my %args  = @_;
+
+    my @probe_types =
+      ( $args{app_handle}->default_replica_type, 'file', 'sqlite' );
 
     my %possible;
     for my $type (@probe_types) {
@@ -28,12 +30,15 @@ sub new {
         return $ret if $ret->replica_exists;
         $possible{$type} = $ret;
     }
-    if (my $default_type =  $possible{$args{app_handle}->default_replica_type} ) { 
+    if ( my $default_type =
+        $possible{ $args{app_handle}->default_replica_type } )
+    {
         return $default_type;
     } else {
-        $class->log_fatal("I don't know what to do with the Prophet replica ".
-            "type you specified: ".$args{app_handle}->default_replica_type.
-            "\nIs your URL syntax correct?");
+        $class->log_fatal( "I don't know what to do with the Prophet replica "
+              . "type you specified: "
+              . $args{app_handle}->default_replica_type
+              . "\nIs your URL syntax correct?" );
     }
 }
 

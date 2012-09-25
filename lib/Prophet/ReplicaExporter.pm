@@ -32,7 +32,7 @@ has target_replica => (
         );
 
         my $src = $self->source_replica;
-        my %init_args = (db_uuid => $src->db_uuid,);
+        my %init_args = ( db_uuid => $src->db_uuid, );
 
         $init_args{resdb_uuid} = $src->resolution_db_handle->db_uuid
           if !$src->is_resdb;
@@ -67,10 +67,10 @@ sub export {
     print " Exporting changesets...\n";
     $self->export_changesets();
 
-    unless ($self->source_replica->is_resdb) {
+    unless ( $self->source_replica->is_resdb ) {
         my $resolutions = Prophet::ReplicaExporter->new(
             target_path =>
-              File::Spec->catdir($self->target_path, 'resolutions'),
+              File::Spec->catdir( $self->target_path, 'resolutions' ),
             source_replica => $self->source_replica->resolution_db_handle,
             app_handle     => $self->app_handle
 
@@ -83,36 +83,38 @@ sub export {
 sub init_export_metadata {
     my $self = shift;
     $self->target_replica->set_latest_sequence_no(
-        $self->source_replica->latest_sequence_no);
-    $self->target_replica->set_replica_uuid($self->source_replica->uuid);
+        $self->source_replica->latest_sequence_no );
+    $self->target_replica->set_replica_uuid( $self->source_replica->uuid );
 
 }
 
 sub export_all_records {
     my $self = shift;
-    $self->export_records(type => $_)
-      for (@{$self->source_replica->list_types});
+    $self->export_records( type => $_ )
+      for ( @{ $self->source_replica->list_types } );
 }
 
 sub export_records {
     my $self = shift;
-    my %args = validate(@_, {type => 1});
+    my %args = validate( @_, { type => 1 } );
 
     my $collection = Prophet::Collection->new(
         app_handle => $self->app_handle,
         handle     => $self->source_replica,
-        type       => $args{type});
-    $collection->matching(sub {1});
-    $self->target_replica->_write_record(record => $_) for @$collection;
+        type       => $args{type}
+    );
+    $collection->matching( sub {1} );
+    $self->target_replica->_write_record( record => $_ ) for @$collection;
 
 }
 
 sub export_changesets {
     my $self = shift;
 
-    for my $changeset (@{$self->source_replica->fetch_changesets(after => 0)})
+    for my $changeset (
+        @{ $self->source_replica->fetch_changesets( after => 0 ) } )
     {
-        $self->target_replica->_write_changeset(changeset => $changeset);
+        $self->target_replica->_write_changeset( changeset => $changeset );
 
     }
 }

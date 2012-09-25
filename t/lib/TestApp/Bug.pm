@@ -27,7 +27,7 @@ sub canonicalize_prop_email {
     $args{props}->{email} = lc( $args{props}->{email} );
 }
 
-sub default_prop_status { 'new' }
+sub default_prop_status {'new'}
 
 __PACKAGE__->meta->make_immutable;
 no Any::Moose;

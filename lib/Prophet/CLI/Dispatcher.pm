@@ -14,48 +14,52 @@ sub add_command_prefix { unshift @PREFIXES, @_ }
 
 on '' => sub {
     my $self = shift;
-    if ($self->context->has_arg('version')) { run_command("Version")->($self) }
-    elsif( $self->context->has_arg('help') ){ run_command("Help")->($self) }
-    else { next_rule }
+    if ( $self->context->has_arg('version') ) {
+        run_command("Version")->($self);
+    } elsif ( $self->context->has_arg('help') ) {
+        run_command("Help")->($self);
+    } else {
+        next_rule;
+    }
 };
 
 # publish foo@bar.com:www/baz => publish --to foo@bar.com:www/baz
 on qr{^(publish|push) (\S+)$} => sub {
     my $self = shift;
-    $self->context->set_arg(to => $2);
-    run($1, $self);
+    $self->context->set_arg( to => $2 );
+    run( $1, $self );
 };
 
 # clone http://fsck.com/~jesse/sd-bugs => clone --from http://fsck.com/~jesse/sd-bugs
 on qr{^(clone|pull) (\S+)$} => sub {
     my $self = shift;
-    $self->context->set_arg(from => $2);
-    run($1, $self);
+    $self->context->set_arg( from => $2 );
+    run( $1, $self );
 };
 
 # log range => log --range range
 on qr{log\s+([0-9LATEST.~]+)} => sub {
     my $self = shift;
-    $self->context->set_arg(range => $1);
-    run('log', $self);
+    $self->context->set_arg( range => $1 );
+    run( 'log', $self );
 };
 
 under settings => sub {
     my $self = shift;
     on edit => sub {
         my $self = shift;
-        $self->context->set_arg( 'edit' );
-        run('settings', $self);
+        $self->context->set_arg('edit');
+        run( 'settings', $self );
     };
     on show => sub {
         my $self = shift;
-        $self->context->set_arg( 'show' );
-        run('settings', $self);
+        $self->context->set_arg('show');
+        run( 'settings', $self );
     };
     on set => sub {
         my $self = shift;
-        $self->context->set_arg( 'set' );
-        run('settings', $self);
+        $self->context->set_arg('set');
+        run( 'settings', $self );
     };
 };
 
@@ -63,27 +67,28 @@ dispatcher->add_rule(
     Path::Dispatcher::Rule::Sequence->new(
         rules => [
             Path::Dispatcher::Rule::Regex->new(
-                regex => qr/^(update|edit|show|display|delete|del|rm|history)$/,
+                regex =>
+                  qr/^(update|edit|show|display|delete|del|rm|history)$/,
             ),
             Prophet::CLI::Dispatcher::Rule::RecordId->new,
         ],
         block => sub {
             my $match = shift;
-            my $self = shift;
+            my $self  = shift;
             $self->context->set_id_from_primary_commands;
-            run($match->pos(1), $self, @_);
+            run( $match->pos(1), $self, @_ );
         },
     )
 );
 
-on [ [ 'update', 'edit' ] ]      => run_command("Update");
-on [ [ 'show', 'display' ] ]     => run_command("Show");
+on [ [ 'update', 'edit' ] ]    => run_command("Update");
+on [ [ 'show',   'display' ] ] => run_command("Show");
 on [ [ 'delete', 'del', 'rm' ] ] => run_command("Delete");
-on history                       => run_command("History");
+on history => run_command("History");
 
-on [ ['create', 'new'] ]         => run_command("Create");
-on [ ['search', 'list', 'ls' ] ] => run_command("Search");
-on [ ['aliases', 'alias'] ]      => run_command('Aliases');
+on [ [ 'create', 'new' ] ] => run_command("Create");
+on [ [ 'search', 'list', 'ls' ] ] => run_command("Search");
+on [ [ 'aliases', 'alias' ] ] => run_command('Aliases');
 
 on version  => run_command("Version");
 on init     => run_command("Init");
@@ -102,9 +107,9 @@ on info     => run_command('Info');
 on push     => run_command('Push');
 
 on qr/^(alias(?:es)?|config)?\s+(.*)/ => sub {
-    my ( $self ) = @_;
-    my $cmd = $1;
-    my $arg = $2;
+    my ($self) = @_;
+    my $cmd    = $1;
+    my $arg    = $2;
 
     my $class = $cmd =~ /^alias/ ? 'Aliases' : 'Config';
 
@@ -117,7 +122,7 @@ on qr/^(alias(?:es)?|config)?\s+(.*)/ => sub {
             context => $self->context,
             cli     => $self->cli,
         );
-        $cmd_obj->parse_cli_arg($cmd, $arg);
+        $cmd_obj->parse_cli_arg( $cmd, $arg );
         return run( $cmd, $self, @_ );
     }
 
@@ -135,7 +140,7 @@ on qr/^_gencomp\s*(.*)/ => sub {
 sub run_command {
     my $name = shift;
     return sub {
-        my $self = shift;
+        my $self             = shift;
         my %constructor_args = (
             cli      => $self->cli,
             context  => $self->context,
@@ -145,9 +150,9 @@ sub run_command {
         );
 
         # undef causes type constraint violations
-        for my $key (keys %constructor_args) {
+        for my $key ( keys %constructor_args ) {
             delete $constructor_args{$key}
-                if !defined($constructor_args{$key});
+              if !defined( $constructor_args{$key} );
         }
 
         my @classes = $self->class_names($name);
@@ -162,9 +167,9 @@ sub run_command {
 }
 
 sub class_names {
-    my $self = shift;
+    my $self    = shift;
     my $command = shift;
-    return map { $_."::".$command } @PREFIXES;
+    return map { $_ . "::" . $command } @PREFIXES;
 
 }
 

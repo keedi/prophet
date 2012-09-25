@@ -41,11 +41,11 @@ has prop_conflicts => (
     default => sub { [] },
 );
 
-sub has_prop_conflicts { scalar @{$_[0]->prop_conflicts} }
+sub has_prop_conflicts { scalar @{ $_[0]->prop_conflicts } }
 
 sub add_prop_conflict {
     my $self = shift;
-    push @{$self->prop_conflicts}, @_;
+    push @{ $self->prop_conflicts }, @_;
 }
 
 sub as_hash {
@@ -53,9 +53,10 @@ sub as_hash {
     my $struct = {
         map { $_ => $self->$_() } (
             qw/record_type record_uuid source_record_exists target_record_exists change_type file_op_conflict/
-        )};
-    for (@{$self->prop_conflicts}) {
-        push @{$struct->{'prop_conflicts'}}, $_->as_hash;
+        )
+    };
+    for ( @{ $self->prop_conflicts } ) {
+        push @{ $struct->{'prop_conflicts'} }, $_->as_hash;
     }
 
     return $struct;
@@ -71,13 +72,13 @@ sub fingerprint {
     my $self = shift;
 
     my $struct = $self->as_hash;
-    for (@{$struct->{prop_conflicts}}) {
+    for ( @{ $struct->{prop_conflicts} } ) {
         $_->{choices} =
-          [sort grep {defined}
-              (delete $_->{source_new_value}, delete $_->{target_value})];
+          [ sort grep {defined}
+              ( delete $_->{source_new_value}, delete $_->{target_value} ) ];
     }
 
-    return sha1_hex(to_json($struct, {utf8 => 1, canonical => 1}));
+    return sha1_hex( to_json( $struct, { utf8 => 1, canonical => 1 } ) );
 }
 
 __PACKAGE__->meta->make_immutable;

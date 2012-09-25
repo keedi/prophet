@@ -8,59 +8,90 @@ use Prophet::Test tests => 18;
 
 as_alice {
     run_command(qw(init));
-    like(run_command(qw(create --type Bug -- --status new --from alice)), qr/Created Bug/, "Created a record as alice");
-    like(run_command(qw(search --type Bug --regex .)), qr/new/, "Found our record");
+    like(
+        run_command(qw(create --type Bug -- --status new --from alice)),
+        qr/Created Bug/,
+        "Created a record as alice"
+    );
+    like( run_command(qw(search --type Bug --regex .)),
+        qr/new/, "Found our record" );
 };
 
 diag('Bob syncs from alice');
 
 my $record_id;
-diag(repo_uri_for('alice'));
+diag( repo_uri_for('alice') );
 as_bob {
 
-    run_command(qw(clone --from), repo_uri_for('alice')  );
-    like(run_command(qw(create --type Dummy -- --ignore yes)), qr/Created Dummy/);
+    run_command( qw(clone --from), repo_uri_for('alice') );
+    like( run_command(qw(create --type Dummy -- --ignore yes)),
+        qr/Created Dummy/ );
 
     # check our local replicas
     my $out = run_command(qw(search --type Bug --regex .));
-    like($out, qr/new/, "We have the one record from alice" );
+    like( $out, qr/new/, "We have the one record from alice" );
     diag($out);
     if ( $out =~ /'uuid': '(.*?)'/ ) {
         $record_id = $1;
     }
 
-    like(run_command( 'update', '--type', 'Bug', '--uuid', $record_id, '--', '--status' => 'stalled'), qr/Bug .* updated/);
+    like(
+        run_command(
+            'update',   '--type',
+            'Bug',      '--uuid',
+            $record_id, '--',
+            '--status' => 'stalled'
+        ),
+        qr/Bug .* updated/
+    );
 
     my $alice_uuid = replica_uuid_for('alice');
-    my $expected = qr/id: (\d+) \($record_id\)
+    my $expected   = qr/id: (\d+) \($record_id\)
 creator: alice\@example.com
 from: alice
 original_replica: $alice_uuid
 status: stalled/;
-    like( run_command(
-            'show', '--type', 'Bug', '--uuid', $record_id, '--batch' ),
-        $expected, 'content is correct' );
+    like(
+        run_command(
+            'show', '--type', 'Bug', '--uuid', $record_id, '--batch'
+        ),
+        $expected,
+        'content is correct'
+    );
 };
 
 as_alice {
-    like(run_command('update', '--type', 'Bug', '--uuid', $record_id, '--', '--status' => 'open' ), qr/Bug .* updated/);
+    like(
+        run_command(
+            'update', '--type', 'Bug', '--uuid',
+            $record_id, '--', '--status' => 'open'
+        ),
+        qr/Bug .* updated/
+    );
 
     my $alice_uuid = replica_uuid_for('alice');
-    my $expected = qr/id: (\d+) \($record_id\)
+    my $expected   = qr/id: (\d+) \($record_id\)
 creator: alice\@example.com
 from: alice
 original_replica: $alice_uuid
 status: open/;
-    like( run_command(
-            'show', '--type', 'Bug', '--uuid', $record_id, '--batch'  ),
-        $expected, 'content is correct' );
+    like(
+        run_command(
+            'show', '--type', 'Bug', '--uuid', $record_id, '--batch'
+        ),
+        $expected,
+        'content is correct'
+    );
 };
 
-my ($alice, $bob, $alice_app, $bob_app);
-# This conflict, we can autoresolve
-as_bob { $bob_app = Prophet::CLI->new()->app_handle; $bob = $bob_app->handle;};
-as_alice { $alice_app = Prophet::CLI->new()->app_handle; $alice = $alice_app->handle};
+my ( $alice, $bob, $alice_app, $bob_app );
 
+# This conflict, we can autoresolve
+as_bob { $bob_app = Prophet::CLI->new()->app_handle; $bob = $bob_app->handle; };
+as_alice {
+    $alice_app = Prophet::CLI->new()->app_handle;
+    $alice     = $alice_app->handle;
+};
 
 as_bob {
     use_ok('Prophet::Replica');
@@ -70,7 +101,7 @@ as_bob {
     my $conflict_obj;
 
     throws_ok {
-        $target->import_changesets( from => $source, force => 1);
+        $target->import_changesets( from => $source, force => 1 );
     }
     qr/not resolved/;
 
@@ -96,14 +127,16 @@ as_bob {
         '3 revisions since the merge'
     );
 
-    my @changesets = @{ $target->fetch_changesets( after => ( $target->latest_sequence_no - 3) ) } ;
+    my @changesets = @{
+        $target->fetch_changesets(
+            after => ( $target->latest_sequence_no - 3 )
+        )
+    };
 
     my $resolution = $changesets[2];
     ok( $resolution->is_resolution, 'marked as resolution' );
     check_bob_final_state_ok(@changesets);
 };
-
-
 
 as_alice {
     my $source = $bob;
@@ -113,7 +146,10 @@ as_alice {
     }
     qr/not resolved/;
 
-    $target->import_resolutions_from_remote_replica( from => $source, force => 1 );
+    $target->import_resolutions_from_remote_replica(
+        from  => $source,
+        force => 1
+    );
 
     $target->import_changesets(
         from  => $source,
@@ -148,7 +184,13 @@ as_bob {
 
     };
 
-    check_bob_final_state_ok( @{ $target->fetch_changesets( after => ( $target->latest_sequence_no - 3) ) });
+    check_bob_final_state_ok(
+        @{
+            $target->fetch_changesets(
+                after => ( $target->latest_sequence_no - 3 )
+            )
+        }
+    );
 
 };
 
@@ -162,10 +204,12 @@ sub check_bob_final_state_ok {
     my @hashes = map { $_->as_hash } @changesets;
     is_deeply(
         \@hashes,
-        [   {   changes => {
+        [
+            {
+                changes => {
                     $record_id => {
                         change_type  => 'update_file',
-                        record_type    => 'Bug',
+                        record_type  => 'Bug',
                         prop_changes => {
                             status => {
                                 old_value => 'stalled',
@@ -194,12 +238,13 @@ sub check_bob_final_state_ok {
                 original_source_uuid => as_alice { replica_uuid() },
                 changes              => {
                     $record_id => {
-                        record_type    => 'Bug',
+                        record_type  => 'Bug',
                         change_type  => 'update_file',
                         prop_changes => {
-                            status => { old_value => 'new', new_value => 'open' }
+                            status =>
+                              { old_value => 'new', new_value => 'open' }
 
-                            }
+                          }
 
                     },
                 }
@@ -216,15 +261,16 @@ sub check_bob_final_state_ok {
                 original_source_uuid => replica_uuid(),
                 changes              => {
                     $record_id => {
-                        record_type    => 'Bug',
+                        record_type  => 'Bug',
                         change_type  => 'update_file',
                         prop_changes => {
-                            status => { old_value => 'open', new_value => 'stalled' }
+                            status =>
+                              { old_value => 'open', new_value => 'stalled' }
 
-                            }
+                          }
 
                     }
-                    }
+                  }
 
             }
         ],

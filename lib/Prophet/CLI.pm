@@ -63,7 +63,7 @@ has context => (
     isa     => 'Prophet::CLIContext',
     lazy    => 1,
     default => sub {
-        return Prophet::CLIContext->new(app_handle => shift->app_handle);
+        return Prophet::CLIContext->new( app_handle => shift->app_handle );
       }
 
 );
@@ -100,22 +100,23 @@ sub run_one_command {
     # we need to substitute $1, $2 ... in the value if there's any
     my $ori_cmd = join ' ', @args;
 
-    if ($self->app_handle->local_replica_url) {
+    if ( $self->app_handle->local_replica_url ) {
         my $aliases = $self->app_handle->config->aliases;
-        while (my ($alias, $replacement) = each %$aliases) {
+        while ( my ( $alias, $replacement ) = each %$aliases ) {
             my $command =
-              $self->_command_matches_alias(\@args, $alias, $replacement,)
+              $self->_command_matches_alias( \@args, $alias, $replacement, )
               || next;
 
             # we don't want to recursively call if people stupidly write
             # alias pull --local = pull --local
-            next if (join(' ', @$command) eq $ori_cmd);
+            next if ( join( ' ', @$command ) eq $ori_cmd );
             return $self->run_one_command(@$command);
         }
     }
 
     #  really, we shouldn't be doing this stuff from the command dispatcher
-    $self->context(Prophet::CLIContext->new(app_handle => $self->app_handle));
+    $self->context(
+        Prophet::CLIContext->new( app_handle => $self->app_handle ) );
     $self->context->setup_from_args(@args);
     my $dispatcher = $self->dispatcher_class->new;
 
@@ -127,7 +128,8 @@ sub run_one_command {
         map {
             s/"/\\"/g;    # escape double quotes
             /\s/ ? qq{"$_"} : $_;
-        } @{$self->context->primary_commands});
+        } @{ $self->context->primary_commands }
+    );
 
     local $Prophet::CLI::Dispatcher::cli = $self;
     my $dispatch = $dispatcher->dispatch($dispatch_command_string);
@@ -138,15 +140,15 @@ sub run_one_command {
 
 sub _command_matches_alias {
     my $self      = shift;
-    my @words     = @{+shift};
+    my @words     = @{ +shift };
     my @alias     = shellwords(shift);
     my @expansion = shellwords(shift);
 
     # Compare @words against @alias
-    return if (scalar(@words) < scalar(@alias));
+    return if ( scalar(@words) < scalar(@alias) );
 
     while (@alias) {
-        if (shift @words ne shift @alias) {
+        if ( shift @words ne shift @alias ) {
             return;
         }
     }
@@ -155,7 +157,7 @@ sub _command_matches_alias {
     # command-line, and @expansion contains the words in the
     # expansion.
 
-    if (first sub {m{\$\d+\b}}, @expansion) {
+    if ( first sub {m{\$\d+\b}}, @expansion ) {
 
         # Expand $n placeholders
         for (@expansion) {
@@ -163,7 +165,7 @@ sub _command_matches_alias {
         }
         return [@expansion];
     } else {
-        return [@expansion, @words];
+        return [ @expansion, @words ];
     }
 }
 
@@ -181,14 +183,14 @@ our $ORIGINAL_STDOUT;
 sub start_pager {
     my $self    = shift;
     my $content = shift;
-    if (is_interactive() && !$ORIGINAL_STDOUT) {
+    if ( is_interactive() && !$ORIGINAL_STDOUT ) {
         local $ENV{'LESS'} ||= '-FXe';
         local $ENV{'MORE'};
         $ENV{'MORE'} ||= '-FXe' unless $^O =~ /^MSWin/;
 
         my $pager = $self->get_pager();
         return unless $pager;
-        open(my $cmd, "|-", $pager) || return;
+        open( my $cmd, "|-", $pager ) || return;
         $|++;
         $ORIGINAL_STDOUT = *STDOUT;
 
@@ -203,7 +205,7 @@ sub in_pager {
 
 sub end_pager {
     my $self = shift;
-    return unless ($self->in_pager);
+    return unless ( $self->in_pager );
     *STDOUT = $ORIGINAL_STDOUT;
 
     # closes the pager
@@ -223,7 +225,7 @@ sub get_script_name {
     my $self = shift;
     return '' if $self->interactive_shell;
     require File::Spec;
-    my ($cmd) = (File::Spec->splitpath($0))[2];
+    my ($cmd) = ( File::Spec->splitpath($0) )[2];
     return $cmd . ' ';
 }
 

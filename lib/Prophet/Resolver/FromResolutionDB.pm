@@ -10,14 +10,15 @@ sub run {
     my $self               = shift;
     my $conflicting_change = shift;
     my $conflict           = shift;
-    my $resdb              = shift;    # XXX: we want diffrent collection actually now
+    my $resdb = shift;    # XXX: we want diffrent collection actually now
 
     require Prophet::Collection;
 
     my $res = Prophet::Collection->new(
         handle => $resdb,
+
         # XXX TODO PULL THIS TYPE FROM A CONSTANT
-        type   => '_prophet_resolution-' . $conflicting_change->fingerprint
+        type => '_prophet_resolution-' . $conflicting_change->fingerprint
     );
     $res->matching( sub {1} );
     return unless $res->count;
@@ -25,12 +26,17 @@ sub run {
     my %answer_map;
     my %answer_count;
 
-    for my $answer ($res->items) {
-        my $key = sha1_hex( to_json($answer->get_props, {utf8 => 1, pretty => 1, canonical => 1}));
+    for my $answer ( $res->items ) {
+        my $key = sha1_hex(
+            to_json(
+                $answer->get_props, { utf8 => 1, pretty => 1, canonical => 1 }
+            )
+        );
         $answer_map{$key} ||= $answer;
         $answer_count{$key}++;
     }
-    my $best = ( sort { $answer_count{$b} <=> $answer_count{$a} } keys %answer_map )[0];
+    my $best =
+      ( sort { $answer_count{$b} <=> $answer_count{$a} } keys %answer_map )[0];
 
     my $answer = $answer_map{$best};
 

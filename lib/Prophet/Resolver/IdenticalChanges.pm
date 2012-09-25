@@ -6,10 +6,10 @@ extends 'Prophet::Resolver';
 
 sub run {
     my $self = shift;
-    my ($conflicting_change, $conflict, $resdb) = validate_pos(
+    my ( $conflicting_change, $conflict, $resdb ) = validate_pos(
         @_,
-        {isa => 'Prophet::ConflictingChange'},
-        {isa => 'Prophet::Conflict'}, 0
+        { isa => 'Prophet::ConflictingChange' },
+        { isa => 'Prophet::Conflict' }, 0
     );
 
     # for everything from the changeset that is the same as the old value of the target replica
@@ -18,20 +18,22 @@ sub run {
 
     my $resolution = Prophet::Change->new_from_conflict($conflicting_change);
 
-    for my $prop_change (@{$conflicting_change->prop_conflicts}) {
+    for my $prop_change ( @{ $conflicting_change->prop_conflicts } ) {
         next
-          if ((
+          if (
+            (
                 !defined $prop_change->target_value
                 || $prop_change->target_value eq ''
             )
 
-            && (!defined $prop_change->source_new_value
-                || $prop_change->source_new_value eq ''));
+            && ( !defined $prop_change->source_new_value
+                || $prop_change->source_new_value eq '' )
+          );
         next
           if (  defined $prop_change->target_value
             and defined $prop_change->source_new_value
-            and ($prop_change->target_value eq $prop_change->source_new_value)
-          );
+            and
+            ( $prop_change->target_value eq $prop_change->source_new_value ) );
         return 0;
     }
 

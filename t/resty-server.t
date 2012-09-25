@@ -4,17 +4,18 @@ use strict;
 
 BEGIN {
     use File::Temp qw(tempdir);
-    $ENV{'PROPHET_REPO'} = tempdir( CLEANUP => ! $ENV{PROPHET_DEBUG}  ) . '/repo-' . $$;
+    $ENV{'PROPHET_REPO'} =
+      tempdir( CLEANUP => !$ENV{PROPHET_DEBUG} ) . '/repo-' . $$;
 
 }
 
 use Prophet::Test;
+
 BEGIN {
     eval { require Test::WWW::Mechanize; require Test::HTTP::Server::Simple }
-        || plan skip_all => "This test file requires Test::WWW::Mechanize and Test::HTTP::Server::Simple";
+      || plan skip_all =>
+      "This test file requires Test::WWW::Mechanize and Test::HTTP::Server::Simple";
 }
-
-
 
 plan tests => 26;
 use JSON;
@@ -33,7 +34,7 @@ my $url_root = $s->started_ok("start up my web server");
 sub url {
     return join( "/", $url_root, @_ );
 }
-diag(url());
+diag( url() );
 $ua->get_ok( url('records.json') );
 is( $ua->content, '[]' );
 
@@ -77,7 +78,8 @@ is_deeply(
 $ua->post( url( 'records', 'Cars', "doesnotexist.json" ), { wheels => 6 } );
 is( $ua->status, '404', "Can't update a nonexistant car" );
 
-$ua->post_ok( url( 'records', 'Cars.json' ), { wheels => 3, seatbelts => 'sure!' } );
+$ua->post_ok( url( 'records', 'Cars.json' ),
+    { wheels => 3, seatbelts => 'sure!' } );
 my $new_uuid;
 if ( $ua->uri =~ /Cars\/(.*)\.json/ ) {
     $new_uuid = $1;
@@ -89,12 +91,16 @@ if ( $ua->uri =~ /Cars\/(.*)\.json/ ) {
 
 my $car2 = Prophet::Record->new( handle => $cli->handle, type => 'Cars' );
 $car2->load( uuid => $new_uuid );
-is_deeply( $car2->get_props, {
-    creator => $car2->default_prop_creator,
-    wheels => 3,
-    seatbelts => 'sure!',
-    original_replica => $car2->handle->uuid,
-}, "The thing we created remotely worked just great" );
+is_deeply(
+    $car2->get_props,
+    {
+        creator          => $car2->default_prop_creator,
+        wheels           => 3,
+        seatbelts        => 'sure!',
+        original_replica => $car2->handle->uuid,
+    },
+    "The thing we created remotely worked just great"
+);
 
 diag("testing property-level access");
 $ua->get_ok( url( 'records', 'Cars', $uuid, 'wheels' ) );
@@ -107,13 +113,15 @@ $ua->get_ok( url( 'records', 'Cars', $uuid, 'wheels' ) );
 is( $ua->content, '5', "The update worked" );
 
 $ua->get( url( 'records', 'Cars', $uuid, 'elephants' ) );
-is( $ua->status, '404', "A car has no elephants yet, so the property returns 0" );
+is( $ua->status, '404',
+    "A car has no elephants yet, so the property returns 0" );
 
 diag("Now fetching a list of all the cars on the road");
 $ua->get_ok( url( 'records', 'Cars.json' ) );
 is_deeply(
     from_json( $ua->content ),
-    {   $uuid     => '/records/Cars/' . $uuid . '.json',
+    {
+        $uuid     => '/records/Cars/' . $uuid . '.json',
         $new_uuid => '/records/Cars/' . $new_uuid . '.json',
     }
 );
@@ -124,6 +132,9 @@ is( $ua->status, '404', "No that page doesn't exist" );
 package Prophet::TestServer;
 use base qw/Test::HTTP::Server::Simple Prophet::Server/;
 
-
-sub port { my $self = shift; $self->{_port} ||= int(rand(1024))+10000; return $self->{_port} }
+sub port {
+    my $self = shift;
+    $self->{_port} ||= int( rand(1024) ) + 10000;
+    return $self->{_port};
+}
 1;

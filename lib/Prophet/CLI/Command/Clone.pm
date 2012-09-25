@@ -16,26 +16,27 @@ sub run {
 
     $self->print_usage if $self->has_arg('h');
 
-    if ($self->has_arg('local')) {
+    if ( $self->has_arg('local') ) {
         $self->list_bonjour_sources;
         return;
     }
 
     $self->validate_args();
 
-    $self->set_arg('to' => $self->app_handle->handle->url());
+    $self->set_arg( 'to' => $self->app_handle->handle->url() );
 
     $self->target(
         Prophet::Replica->get_handle(
             url        => $self->arg('to'),
             app_handle => $self->app_handle,
-        ));
+        )
+    );
 
-    if ($self->target->replica_exists) {
+    if ( $self->target->replica_exists ) {
         die "The target replica already exists.\n";
     }
 
-    if (!$self->target->can_initialize) {
+    if ( !$self->target->can_initialize ) {
         die "The target replica path you specified can't be created.\n";
     }
 
@@ -43,12 +44,13 @@ sub run {
         Prophet::Replica->get_handle(
             url        => $self->arg('from'),
             app_handle => $self->app_handle,
-        ));
+        )
+    );
 
     my %init_args;
-    if ($self->source->isa('Prophet::ForeignReplica')) {
+    if ( $self->source->isa('Prophet::ForeignReplica') ) {
         $self->target->after_initialize(
-            sub { shift->app_handle->set_db_defaults });
+            sub { shift->app_handle->set_db_defaults } );
     } else {
         %init_args = (
             db_uuid    => $self->source->db_uuid,
@@ -56,7 +58,7 @@ sub run {
         );
     }
 
-    unless ($self->source->replica_exists) {
+    unless ( $self->source->replica_exists ) {
         die
           "The source replica '@{[$self->source->url]}' doesn't exist or is unreadable.\n";
     }
@@ -70,7 +72,8 @@ sub run {
 
     $self->app_handle->config->group_set(
         $self->app_handle->config->replica_config_file,
-        [{
+        [
+            {
                 key   => $base_key . '.url',
                 value => $self->arg('from'),
             },
@@ -78,16 +81,17 @@ sub run {
                 key   => $base_key . '.uuid',
                 value => $self->target->uuid,
             },
-        ]);
+        ]
+    );
 
-    if ($self->source->can('database_settings')) {
+    if ( $self->source->can('database_settings') ) {
         my $remote_db_settings = $self->source->database_settings;
         my $default_settings   = $self->app_handle->database_settings;
-        for my $name (keys %$remote_db_settings) {
+        for my $name ( keys %$remote_db_settings ) {
             my $uuid = $default_settings->{$name}[0];
             die $name unless $uuid;
-            my $s = $self->app_handle->setting(uuid => $uuid);
-            $s->set($remote_db_settings->{$name});
+            my $s = $self->app_handle->setting( uuid => $uuid );
+            $s->set( $remote_db_settings->{$name} );
         }
     }
 
@@ -97,7 +101,7 @@ sub run {
 sub validate_args {
     my $self = shift;
 
-    unless ($self->has_arg('from')) {
+    unless ( $self->has_arg('from') ) {
         warn "No --from specified!\n";
         die $self->print_usage;
     }
@@ -121,24 +125,24 @@ sub list_bonjour_sources {
     my @bonjour_sources;
 
     Prophet::App->try_to_require('Net::Bonjour');
-    if (Prophet::App->already_required('Net::Bonjour')) {
+    if ( Prophet::App->already_required('Net::Bonjour') ) {
         print "Probing for local sources with Bonjour\n\n";
         my $res = Net::Bonjour->new('prophet');
         $res->discover;
         my $count = 0;
-        for my $entry ($res->entries) {
+        for my $entry ( $res->entries ) {
             require URI;
             my $uri = URI->new();
             $uri->scheme('http');
-            $uri->host($entry->hostname);
-            $uri->port($entry->port);
+            $uri->host( $entry->hostname );
+            $uri->port( $entry->port );
             $uri->path('replica/');
             print '  * ' . $uri->canonical . ' - ' . $entry->name . "\n";
             $count++;
         }
 
         if ($count) {
-            print "\nFound $count source" . ($count == 1 ? '' : 's') . "\n";
+            print "\nFound $count source" . ( $count == 1 ? '' : 's' ) . "\n";
         } else {
             print "No local sources found.\n";
         }

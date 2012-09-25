@@ -31,14 +31,14 @@ sub run {
     $self->print_usage if $self->has_arg('h');
 
     # --all overrides any other args
-    if ($self->has_arg('all')) {
-        $self->set_arg('range', '0..' . $handle->latest_sequence_no);
+    if ( $self->has_arg('all') ) {
+        $self->set_arg( 'range', '0..' . $handle->latest_sequence_no );
     }
 
-    my ($start, $end) =
+    my ( $start, $end ) =
         $self->has_arg('range')
       ? $self->parse_range_arg()
-      : ($handle->latest_sequence_no - 20, $handle->latest_sequence_no);
+      : ( $handle->latest_sequence_no - 20, $handle->latest_sequence_no );
 
     # parse_range returned undef
     die "Invalid range specified.\n" if !defined($start) || !defined($end);
@@ -53,7 +53,7 @@ sub run {
         until    => $end,
         callback => sub {
             my %args = (@_);
-            $self->handle_changeset($args{changeset});
+            $self->handle_changeset( $args{changeset} );
 
         },
     );
@@ -74,28 +74,28 @@ sub parse_range_arg {
     my $range = $self->arg('range');
 
     # split on .. (denotes range)
-    my @start_and_end = split(/\.\./, $range, 2);
-    my ($start, $end);
-    if (@start_and_end == 1) {
+    my @start_and_end = split( /\.\./, $range, 2 );
+    my ( $start, $end );
+    if ( @start_and_end == 1 ) {
 
         # only one delimiter was specified -- this will be the
         # START; END defaults to the latest
         $end   = $self->handle->latest_sequence_no;
-        $start = $self->_parse_delimiter($start_and_end[0]);
-    } elsif (@start_and_end == 2) {
+        $start = $self->_parse_delimiter( $start_and_end[0] );
+    } elsif ( @start_and_end == 2 ) {
 
         # both delimiters were specified
         # parse the first one as START
-        $start = $self->_parse_delimiter($start_and_end[0]);
+        $start = $self->_parse_delimiter( $start_and_end[0] );
 
         # parse the second one as END
-        $end = $self->_parse_delimiter($start_and_end[1]);
+        $end = $self->_parse_delimiter( $start_and_end[1] );
     } else {
 
         # something wrong was specified
-        return undef;
+        return;
     }
-    return ($start, $end);
+    return ( $start, $end );
 }
 
 =method _parse_delimiter($delim)
@@ -106,9 +106,9 @@ an integer number or of the form LATEST~#, returns undef (invalid delimiter).
 =cut
 
 sub _parse_delimiter {
-    my ($self, $delim) = @_;
+    my ( $self, $delim ) = @_;
 
-    if ($delim =~ m/^\d+$/) {
+    if ( $delim =~ m/^\d+$/ ) {
 
         # a sequence number was specified, just use it
         return $delim;
@@ -118,12 +118,12 @@ sub _parse_delimiter {
         # if it's just LATEST, we want only the last change
         my $offset;
         $offset = 0 if $delim eq 'LATEST';
-        (undef, $offset) = split(/~/, $delim, 2) if $delim =~ m/^LATEST~/;
-        return undef unless defined $offset && $offset =~ m/^\d+$/;
+        ( undef, $offset ) = split( /~/, $delim, 2 ) if $delim =~ m/^LATEST~/;
+        return unless defined $offset && $offset =~ m/^\d+$/;
 
         return $self->handle->latest_sequence_no - $offset;
     }
-    return undef;
+    return;
 }
 
 sub handle_changeset {
@@ -133,7 +133,8 @@ sub handle_changeset {
         change_header => sub {
             my $change = shift;
             $self->change_header($change);
-        });
+        }
+    );
 
 }
 
@@ -144,7 +145,7 @@ sub change_header {
         " # "
       . $change->record_type . " "
       . $self->app_handle->handle->find_or_create_luid(
-        uuid => $change->record_uuid)
+        uuid => $change->record_uuid )
       . " ("
       . $change->record_uuid . ")\n";
 

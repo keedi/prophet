@@ -1,4 +1,4 @@
-package Prophet::FSR::Backend::SSH;
+package Prophet::Replica::FS::Backend::SSH;
 use Any::Moose;
 
 no Any::Moose;

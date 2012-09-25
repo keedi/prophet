@@ -19,7 +19,7 @@ use constant FORMAT_VERSION => 0;
 # reload config after setting values
 override group_set => sub {
     my $self = shift;
-    my ($filename, $args_ref, $override) = @_;
+    my ( $filename, $args_ref, $override ) = @_;
 
     # Set a config format version on this config file if
     # it doesn't have one already.
@@ -30,7 +30,7 @@ override group_set => sub {
       }
       unless _file_has_config_format_version($filename);
 
-    $self->SUPER::group_set($filename, $args_ref);
+    $self->SUPER::group_set( $filename, $args_ref );
     $self->load unless $override;
 };
 
@@ -50,7 +50,7 @@ override dir_file => sub {'config'};
 override load_dirs => sub {
     my $self = shift;
 
-    $self->load_file($self->replica_config_file)
+    $self->load_file( $self->replica_config_file )
       if -f $self->replica_config_file;
 };
 
@@ -78,6 +78,7 @@ If a filename is passed in, this method will only return the aliases that are
 defined in that particular config file.
 
 =cut
+
 # grab all values in the 'alias' section (of the file, if given) and strip
 # away the section name
 sub aliases {
@@ -95,8 +96,8 @@ sub aliases {
             callback => sub {
                 my %args = @_;
                 return unless defined $args{name};
-                if ($args{section} eq 'alias') {
-                    $new_aliases{$args{name}} = $args{value};
+                if ( $args{section} eq 'alias' ) {
+                    $new_aliases{ $args{name} } = $args{value};
                 }
             },
 
@@ -108,16 +109,16 @@ sub aliases {
             # if we're running a shell and the config file has changed
             # in a bad way since we started up.
             error => sub {
-                Config::GitLike::error_callback(@_, filename => $file);
+                Config::GitLike::error_callback( @_, filename => $file );
             },
         );
     } else {
-        my %aliases = $self->get_regexp(key => '^alias\.');
+        my %aliases = $self->get_regexp( key => '^alias\.' );
 
         %new_aliases = map {
             my $alias = $_;
             $alias =~ s/^alias\.//;
-            ($alias => $aliases{$_});
+            ( $alias => $aliases{$_} );
         } keys %aliases;
     }
 
@@ -131,6 +132,7 @@ of all currently defined source replicas, in the format { 'name' => 'URL' }, or
 { 'URL' => 'name' } if the argument C<by_url> is passed in.
 
 =cut
+
 # grab all the replicas we know of and return a hash of
 # name => variable, or variable => name if $args{by_variable} is true
 sub sources {
@@ -142,10 +144,10 @@ sub sources {
     );
 
     my %sources =
-      $self->get_regexp(key => "^replica[.].*[.]$args{variable}\$");
+      $self->get_regexp( key => "^replica[.].*[.]$args{variable}\$" );
     my %new_sources = map {
         $_ =~ /^replica\.(.*)\.$args{variable}$/;
-        $args{by_variable} ? ($sources{$_} => $1) : ($1 => $sources{$_});
+        $args{by_variable} ? ( $sources{$_} => $1 ) : ( $1 => $sources{$_} );
     } keys %sources;
 
     return wantarray ? %new_sources : \%new_sources;
@@ -157,20 +159,21 @@ The replica-specific configuration file, or the configuration file given by
 C<PROPHET_APP_CONFIG> if that environmental variable is set.
 
 =cut
+
 sub replica_config_file {
     my $self = shift;
 
     return exists $ENV{PROPHET_APP_CONFIG}
       ? $ENV{PROPHET_APP_CONFIG}
-      : Prophet::Util->catfile($self->app_handle->handle->fs_root,
-        $self->dir_file);
+      : Prophet::Util->catfile( $self->app_handle->handle->fs_root,
+        $self->dir_file );
 }
 
 sub _file_if_exists {
     my $self = shift;
     my $file = shift || '';    # quiet warnings
 
-    return (-e $file) ? $file : '';
+    return ( -e $file ) ? $file : '';
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -12,6 +12,7 @@ use Params::Validate;
 The record type for the record.
 
 =cut
+
 has record_type => (
     is  => 'rw',
     isa => 'Str',
@@ -22,6 +23,7 @@ has record_type => (
 The UUID of the record being changed.
 
 =cut
+
 has record_uuid => (
     is  => 'rw',
     isa => 'Str',
@@ -32,6 +34,7 @@ has record_uuid => (
 One of C<add_file>, C<add_dir>, C<update_file>, C<delete>.
 
 =cut
+
 has change_type => (
     is  => 'rw',
     isa => 'Prophet::Type::ChangeType',
@@ -48,6 +51,7 @@ A boolean value specifying whether this change represents a conflict resolution
 or not.
 
 =cut
+
 has is_resolution => (
     is  => 'rw',
     isa => 'Bool',
@@ -59,6 +63,7 @@ Returns a list of L<Prophet::PropChange>s associated with this Change. Takes an
 optional arrayref to fully replace the set of propchanges.
 
 =cut
+
 has prop_changes => (
     is         => 'rw',
     isa        => 'ArrayRef',
@@ -72,11 +77,12 @@ Returns true if this change contains any L<Prophet::PropChange>s and false if
 it doesn't.
 
 =cut
-sub has_prop_changes { scalar @{$_[0]->prop_changes} }
+
+sub has_prop_changes { scalar @{ $_[0]->prop_changes } }
 
 sub _add_prop_change {
     my $self = shift;
-    push @{$self->prop_changes}, @_;
+    push @{ $self->prop_changes }, @_;
 }
 
 =method new_from_conflict $conflict
@@ -87,14 +93,16 @@ representing the conflict resolution.
 =cut
 
 sub new_from_conflict {
-    my ($class, $conflict) = @_;
-    my $self = $class->new({
+    my ( $class, $conflict ) = @_;
+    my $self = $class->new(
+        {
             is_resolution  => 1,
             resolution_cas => $conflict->fingerprint,
             change_type    => $conflict->change_type,
             record_type    => $conflict->record_type,
             record_uuid    => $conflict->record_uuid
-    });
+        }
+    );
     return $self;
 }
 
@@ -128,9 +136,9 @@ sub as_hash {
     my $self  = shift;
     my $props = {};
 
-    for my $pc ($self->prop_changes) {
-        $props->{$pc->name} =
-          {old_value => $pc->old_value, new_value => $pc->new_value};
+    for my $pc ( $self->prop_changes ) {
+        $props->{ $pc->name } =
+          { old_value => $pc->old_value, new_value => $pc->new_value };
     }
 
     return {
@@ -150,13 +158,15 @@ prepended to the change string before it is returned.
 
 sub as_string {
     my $self         = shift;
-    my %args         = validate(@_, {header_callback => 0,});
+    my %args         = validate( @_, { header_callback => 0, } );
     my $out          = '';
     my @prop_changes = $self->prop_changes;
     return '' if @prop_changes == 0;
-    $out .= $args{header_callback}->($self) if ($args{header_callback});
+    $out .= $args{header_callback}->($self) if ( $args{header_callback} );
 
-    for my $summary (sort grep {defined} (map { $_->summary } @prop_changes)) {
+    for
+      my $summary ( sort grep {defined} ( map { $_->summary } @prop_changes ) )
+    {
         $out .= "  " . $summary . "\n";
     }
 
@@ -180,16 +190,19 @@ sub new_from_hashref {
     my $class   = shift;
     my $uuid    = shift;
     my $hashref = shift;
-    my $self    = $class->new({
+    my $self    = $class->new(
+        {
             record_type => $hashref->{'record_type'},
             record_uuid => $uuid,
             change_type => $hashref->{'change_type'},
-    });
-    for my $prop (keys %{$hashref->{'prop_changes'}}) {
+        }
+    );
+    for my $prop ( keys %{ $hashref->{'prop_changes'} } ) {
         $self->add_prop_change(
             name => $prop,
             old  => $hashref->{'prop_changes'}->{$prop}->{'old_value'},
-            new  => $hashref->{'prop_changes'}->{$prop}->{'new_value'});
+            new  => $hashref->{'prop_changes'}->{$prop}->{'new_value'}
+        );
     }
     return $self;
 }

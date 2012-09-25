@@ -6,9 +6,9 @@ use File::Temp qw'tempdir';
 use lib 't/lib';
 use Test::Exception;
 
-
 use_ok('Prophet::CLI');
-$ENV{'PROPHET_REPO'} = tempdir( CLEANUP => ! $ENV{PROPHET_DEBUG}  ) . '/repo-' . $$;
+$ENV{'PROPHET_REPO'} =
+  tempdir( CLEANUP => !$ENV{PROPHET_DEBUG} ) . '/repo-' . $$;
 my $cli = Prophet::CLI->new();
 my $cxn = $cli->handle;
 isa_ok( $cxn, 'Prophet::Replica', "Got the cxn" );

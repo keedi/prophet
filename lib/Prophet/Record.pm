@@ -18,14 +18,16 @@ has handle => (
     is       => 'rw',
     required => 1,
     lazy     => 1,
-    default  => sub { shift->app_handle->handle });
+    default  => sub { shift->app_handle->handle }
+);
 
 has type => (
     is        => 'rw',
     isa       => 'Str',
     predicate => 'has_type',
     required  => 1,
-    default   => sub {undef});
+    default   => sub {undef}
+);
 
 has uuid => (
     is  => 'rw',
@@ -55,7 +57,7 @@ certain props in order to be created, for example.
 =cut
 
 sub declared_props {
-    return sort keys %{$_[0]->PROPERTIES};
+    return sort keys %{ $_[0]->PROPERTIES };
 }
 
 =method record_type
@@ -75,14 +77,14 @@ is triggered.
 =cut
 
 sub register_reference {
-    my ($class, $accessor, $foreign_class, @args) = @_;
+    my ( $class, $accessor, $foreign_class, @args ) = @_;
     Prophet::App->require($foreign_class);
-    if ($foreign_class->isa('Prophet::Collection')) {
+    if ( $foreign_class->isa('Prophet::Collection') ) {
         return $class->register_collection_reference(
             $accessor => $foreign_class,
             @args
         );
-    } elsif ($foreign_class->isa('Prophet::Record')) {
+    } elsif ( $foreign_class->isa('Prophet::Record') ) {
         return $class->register_record_reference(
             $accessor => $foreign_class,
 
@@ -107,18 +109,18 @@ C<$key_in_model> in the model class of C<$collection_class>.
 =cut
 
 sub register_collection_reference {
-    my ($class, $accessor, $collection_class, @args) = @_;
-    my %args = validate(@args, {by => 1});
+    my ( $class, $accessor, $collection_class, @args ) = @_;
+    my %args = validate( @args, { by => 1 } );
     no strict 'refs';
 
-    Prophet::App->require($collection_class->record_class);
+    Prophet::App->require( $collection_class->record_class );
 
-    *{$class . "::$accessor"} = sub {
+    *{ $class . "::$accessor" } = sub {
         my $self = shift;
         my $collection =
-          $collection_class->new(app_handle => $self->app_handle,);
+          $collection_class->new( app_handle => $self->app_handle, );
         $collection->matching(
-            sub { ($_[0]->prop($args{by}) || '') eq $self->uuid });
+            sub { ( $_[0]->prop( $args{by} ) || '' ) eq $self->uuid } );
         return $collection;
     };
 
@@ -140,19 +142,19 @@ model class of C<$collection_class>.
 =cut
 
 sub register_record_reference {
-    my ($class, $accessor, $record_class, @args) = @_;
-    my %args = validate(@args, {by => 1});
+    my ( $class, $accessor, $record_class, @args ) = @_;
+    my %args = validate( @args, { by => 1 } );
     no strict 'refs';
 
     Prophet::App->require($record_class);
 
-    *{$class . "::$accessor"} = sub {
+    *{ $class . "::$accessor" } = sub {
         my $self   = shift;
         my $record = $record_class->new(
             app_handle => $self->app_handle,
             handle     => $self->handle,
         );
-        $record->load(uuid => $self->prop($args{by}));
+        $record->load( uuid => $self->prop( $args{by} ) );
         return $record;
     };
 
@@ -179,7 +181,7 @@ returns undef.
 
 sub create {
     my $self = shift;
-    my %args = validate(@_, {props => 1});
+    my %args = validate( @_, { props => 1 } );
     my $uuid = $self->handle->uuid_generator->create_str;
 
     my $props = $args{props};
@@ -188,18 +190,18 @@ sub create {
     $self->canonicalize_props($props);
 
     # XXX TODO - this should be a real exception
-    return undef unless (keys %$props);
+    return unless ( keys %$props );
 
-    $self->validate_props($props) or return undef;
-    $self->_create_record(props => $props, uuid => $uuid);
+    $self->validate_props($props) or return;
+    $self->_create_record( props => $props, uuid => $uuid );
 }
 
 # _create_record is a helper routine, used both by create and by databasesetting::create
 sub _create_record {
     my $self = shift;
-    my %args = validate(@_, {props => 1, uuid => 1});
+    my %args = validate( @_, { props => 1, uuid => 1 } );
 
-    $self->uuid($args{uuid});
+    $self->uuid( $args{uuid} );
 
     $self->handle->create_record(
         props => $args{'props'},
@@ -228,41 +230,45 @@ sub load {
         @_,
         {
             uuid => {
-                optional => 1,
-                callbacks =>
-                  {'uuid or luid present' => sub { $_[0] || $_[1]->{luid} },},
+                optional  => 1,
+                callbacks => {
+                    'uuid or luid present' => sub { $_[0] || $_[1]->{luid} },
+                },
             },
             luid => {
-                optional => 1,
-                callbacks =>
-                  {'luid or uuid present' => sub { $_[0] || $_[1]->{uuid} },},
+                optional  => 1,
+                callbacks => {
+                    'luid or uuid present' => sub { $_[0] || $_[1]->{uuid} },
+                },
             },
-        });
+        }
+    );
 
-    if ($args{luid}) {
-        $self->luid($args{luid});
-        $self->uuid($self->handle->find_uuid_by_luid(luid => $args{luid}));
-        return ($self->uuid) if ($self->uuid);
+    if ( $args{luid} ) {
+        $self->luid( $args{luid} );
+        $self->uuid( $self->handle->find_uuid_by_luid( luid => $args{luid} ) );
+        return ( $self->uuid ) if ( $self->uuid );
     } else {
-        $self->uuid($args{uuid});
-        $self->luid($self->handle->find_or_create_luid(uuid => $args{uuid}));
-        return ($self->luid) if ($self->luid);
+        $self->uuid( $args{uuid} );
+        $self->luid(
+            $self->handle->find_or_create_luid( uuid => $args{uuid} ) );
+        return ( $self->luid ) if ( $self->luid );
     }
 
-    return undef;
+    return;
 }
 
 # a private method to let collection search results instantiate records more quickly
 # (See Prophet::Replica::sqlite)
 sub _instantiate_from_hash {
     my $self = shift;
-    my %args = (uuid => undef, luid => undef, @_);
+    my %args = ( uuid => undef, luid => undef, @_ );
 
     # we might not have a luid cheaply (see the prophet filesys backend)
-    $self->luid($args{'luid'}) if (defined $args{'luid'});
+    $self->luid( $args{'luid'} ) if ( defined $args{'luid'} );
 
     # We _Always_ have a luid
-    $self->uuid($args{'uuid'});
+    $self->uuid( $args{'uuid'} );
 
     # XXX TODO - expect props as well
 }
@@ -284,9 +290,9 @@ This is a convenience method around L</set_props>.
 sub set_prop {
     my $self = shift;
 
-    my %args = validate(@_, {name => 1, value => 1});
-    my $props = {$args{'name'} => $args{'value'}};
-    $self->set_props(props => $props);
+    my %args = validate( @_, { name => 1, value => 1 } );
+    my $props = { $args{'name'} => $args{'value'} };
+    $self->set_props( props => $props );
 }
 
 =method set_props { props => { key1 => val1, key2 => val2} }
@@ -303,21 +309,22 @@ On success, returns true.
 
 sub set_props {
     my $self = shift;
-    my %args = validate(@_, {props => 1});
+    my %args = validate( @_, { props => 1 } );
 
     confess
       "set_props called on a record that hasn't been loaded or created yet."
       if !$self->uuid;
 
-    $self->canonicalize_props($args{'props'});
-    $self->validate_props($args{'props'}) || return undef;
+    $self->canonicalize_props( $args{'props'} );
+    $self->validate_props( $args{'props'} ) || return;
 
-    return 0 unless grep {defined} values %{$args{props}};
+    return 0 unless grep {defined} values %{ $args{props} };
 
     $self->handle->set_record_props(
         type  => $self->type,
         uuid  => $self->uuid,
-        props => $args{'props'});
+        props => $args{'props'}
+    );
     return 1;
 }
 
@@ -350,8 +357,10 @@ it does not.
 
 sub exists {
     my $self = shift;
-    return $self->handle->record_exists(uuid => $self->uuid,
-        type => $self->type);
+    return $self->handle->record_exists(
+        uuid => $self->uuid,
+        type => $self->type
+    );
 }
 
 =method prop $name
@@ -376,13 +385,13 @@ to setting the prop to ''.)
 
 sub delete_prop {
     my $self = shift;
-    my %args = validate(@_, {name => 1});
+    my %args = validate( @_, { name => 1 } );
 
     confess
       "delete_prop called on a record that hasn't been loaded or created yet."
       if !$self->uuid;
 
-    $self->set_prop(name => $args{'name'}, value => '');
+    $self->set_prop( name => $args{'name'}, value => '' );
 
     #    $self->handle->delete_record_prop(
     #        uuid => $self->uuid,
@@ -400,7 +409,7 @@ historical versions of the record)
 sub delete {
     my $self = shift;
     delete $self->{props};
-    $self->handle->delete_record(type => $self->type, uuid => $self->uuid);
+    $self->handle->delete_record( type => $self->type, uuid => $self->uuid );
 
 }
 
@@ -418,11 +427,12 @@ starting from the changeset containing the record's creation.
 
 sub changesets {
     my $self = shift;
-    my %args = validate(@_, {limit => 0});
+    my %args = validate( @_, { limit => 0 } );
     return $self->handle->changesets_for_record(
         uuid => $self->uuid,
         type => $self->type,
-        $args{limit} ? (limit => $args{limit}) : ());
+        $args{limit} ? ( limit => $args{limit} ) : ()
+    );
 }
 
 =method changes
@@ -474,16 +484,17 @@ sub validate_props {
     my $props  = shift;
     my $errors = {};
     my @errors;
-    for my $key (uniq(keys %$props, $self->declared_props)) {
-        return undef unless ($self->_validate_prop_name($key));
-        if (my $sub = $self->can('validate_prop_' . $key)) {
-            $sub->($self, props => $props, errors => $errors)
+    for my $key ( uniq( keys %$props, $self->declared_props ) ) {
+        return unless ( $self->_validate_prop_name($key) );
+        if ( my $sub = $self->can( 'validate_prop_' . $key ) ) {
+            $sub->( $self, props => $props, errors => $errors )
               || push @errors,
-              "Validation error for '$key': " . ($errors->{$key} || '') . '.';
+              "Validation error for '$key': "
+              . ( $errors->{$key} || '' ) . '.';
         }
     }
     if (@errors) {
-        die join("\n", @errors) . "\n";
+        die join( "\n", @errors ) . "\n";
     }
     return 1;
 }
@@ -511,8 +522,8 @@ sub canonicalize_props {
     my $self   = shift;
     my $props  = shift;
     my $errors = {};
-    for my $key (uniq(keys %$props, $self->declared_props)) {
-        $self->canonicalize_prop($key, $props, $errors);
+    for my $key ( uniq( keys %$props, $self->declared_props ) ) {
+        $self->canonicalize_prop( $key, $props, $errors );
     }
     return 1;
 }
@@ -522,8 +533,8 @@ sub canonicalize_prop {
     my $prop   = shift;
     my $props  = shift;
     my $errors = shift;
-    if (my $sub = $self->can('canonicalize_prop_' . $prop)) {
-        $sub->($self, props => $props, errors => $errors);
+    if ( my $sub = $self->can( 'canonicalize_prop_' . $prop ) ) {
+        $sub->( $self, props => $props, errors => $errors );
         return 1;
     }
 
@@ -547,8 +558,8 @@ sub default_props {
     for my $method (@methods) {
         my ($key) = $method =~ /^default_prop_(.+)$/;
 
-        $props->{$key} = $self->$method(props => $props)
-          if !defined($props->{$key});
+        $props->{$key} = $self->$method( props => $props )
+          if !defined( $props->{$key} );
     }
 
     return 1;
@@ -589,10 +600,10 @@ sub validate_prop_from_recommended_values {
     my $prop = shift;
     my $args = shift;
 
-    if (my @options = $self->recommended_values_for_prop($prop)) {
+    if ( my @options = $self->recommended_values_for_prop($prop) ) {
         return 1
           if (
-            (scalar grep { $args->{props}{$prop} eq $_ } @options)
+            ( scalar grep { $args->{props}{$prop} eq $_ } @options )
 
             # force-set props with ! to bypass validation
             || $args->{props}{$prop} =~ s/!$//
@@ -624,10 +635,10 @@ sub recommended_values_for_prop {
     my $self = shift;
     my $prop = shift;
 
-    if (my $code = $self->can("_recommended_values_for_prop_" . $prop)) {
-        $code->($self, @_);
+    if ( my $code = $self->can( "_recommended_values_for_prop_" . $prop ) ) {
+        $code->( $self, @_ );
     } else {
-        return undef;
+        return;
     }
 
 }
@@ -661,8 +672,8 @@ L<_default_summary_format> if nothing better can be found.
 sub _summary_format {
     my $self = shift;
     return $self->app_handle->config->get(
-        key => $self->type . '.summary-format')
-      || $self->app_handle->config->get(key => 'record.summary-format')
+        key => $self->type . '.summary-format' )
+      || $self->app_handle->config->get( key => 'record.summary-format' )
       || $self->_default_summary_format;
 }
 
@@ -680,7 +691,7 @@ sub _atomize_summary_format {
     my $self = shift;
     my $format = shift || $self->_summary_format;
 
-    return undef unless $format;
+    return unless $format;
     return split /\s*\|\s*/, $format;
 }
 
@@ -710,16 +721,16 @@ sub _parse_format_summary {
     my $props = $self->get_props;
 
     my @out;
-    for my $atom ($self->_atomize_summary_format) {
+    for my $atom ( $self->_atomize_summary_format ) {
         my %atom_data;
-        my ($format, $prop, $value, $color);
+        my ( $format, $prop, $value, $color );
 
-        if ($atom =~ /,/) {
-            ($format, $prop, $color) = split /,/, $atom;
+        if ( $atom =~ /,/ ) {
+            ( $format, $prop, $color ) = split /,/, $atom;
 
             $value = $prop;
 
-            unless ($value =~ /^\$/) {
+            unless ( $value =~ /^\$/ ) {
                 $value = $props->{$value}
                   || "-";
             }
@@ -735,7 +746,7 @@ sub _parse_format_summary {
             format    => $format,
             prop      => $prop,
             value     => $atom_value,
-            formatted => $self->format_atom($format, $atom_value, $color),
+            formatted => $self->format_atom( $format, $atom_value, $color ),
           };
     }
     return @out;
@@ -781,7 +792,7 @@ sub _format_all_props_raw {
 
     };
 
-    for my $prop (keys %$props) {
+    for my $prop ( keys %$props ) {
         push @out,
           {
             prop      => $prop,
@@ -808,9 +819,9 @@ sub atom_value {
     my $self = shift;
     my $value_in = shift || '';
 
-    if ($value_in =~ /^\$[gu]uid/) {
+    if ( $value_in =~ /^\$[gu]uid/ ) {
         return $self->uuid;
-    } elsif ($value_in eq '$luid') {
+    } elsif ( $value_in eq '$luid' ) {
         return $self->luid;
     }
 
@@ -826,12 +837,12 @@ warn()s on.
 =cut
 
 sub format_atom {
-    my ($self, $string, $value, $color) = @_;
+    my ( $self, $string, $value, $color ) = @_;
 
     my $formatted_atom;
     eval {
         use warnings FATAL => 'all';    # sprintf only warns on errors
-        $formatted_atom = sprintf($string, $self->atom_value($value));
+        $formatted_atom = sprintf( $string, $self->atom_value($value) );
     };
     if ($@) {
         chomp $@;
@@ -850,7 +861,7 @@ sub format_atom {
           . "The error encountered was:\n\n'"
           . $@ . "'\n";
     }
-    return $color ? colored($formatted_atom, $color) : $formatted_atom;
+    return $color ? colored( $formatted_atom, $color ) : $formatted_atom;
 }
 
 =method find_or_create_luid
@@ -861,7 +872,7 @@ Finds the luid for the records uuid, or creates a new one. Returns the luid.
 
 sub find_or_create_luid {
     my $self = shift;
-    my $luid = $self->handle->find_or_create_luid(uuid => $self->uuid);
+    my $luid = $self->handle->find_or_create_luid( uuid => $self->uuid );
     $self->luid($luid);
     return $luid;
 }
@@ -875,11 +886,12 @@ Returns this record's changesets as a single string.
 sub history_as_string {
     my $self = shift;
     my $out  = '';
-    for my $changeset ($self->changesets) {
+    for my $changeset ( $self->changesets ) {
         $out .= $changeset->as_string(
             change_filter => sub {
                 shift->record_uuid eq $self->uuid;
-            });
+            }
+        );
     }
 
     return $out;
@@ -894,7 +906,7 @@ Returns a list of method names that refer to other individual records
 sub record_reference_methods {
     my $self      = shift;
     my $class     = blessed($self) || $self;
-    my %accessors = %{$self->REFERENCES->{$class} || {}};
+    my %accessors = %{ $self->REFERENCES->{$class} || {} };
 
     return grep { $accessors{$_}{arity} eq 'record' }
       keys %accessors;
@@ -909,7 +921,7 @@ Returns a list of method names that refer to collections
 sub collection_reference_methods {
     my $self      = shift;
     my $class     = blessed($self) || $self;
-    my %accessors = %{$self->REFERENCES->{$class} || {}};
+    my %accessors = %{ $self->REFERENCES->{$class} || {} };
 
     return grep { $accessors{$_}{arity} eq 'collection' }
       keys %accessors;
@@ -918,7 +930,6 @@ sub collection_reference_methods {
 __PACKAGE__->meta->make_immutable;
 no Any::Moose;
 1;
-
 
 =head1 DESCRIPTION
 

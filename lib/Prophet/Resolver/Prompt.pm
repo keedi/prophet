@@ -8,8 +8,10 @@ sub run {
     return 0 if $conflicting_change->file_op_conflict;
 
     my $resolution = Prophet::Change->new_from_conflict($conflicting_change);
-    print "Oh no! There's a conflict between this replica and the one you're syncing from:\n";
-    print $conflicting_change->record_type . " " . $conflicting_change->record_uuid . "\n";
+    print
+      "Oh no! There's a conflict between this replica and the one you're syncing from:\n";
+    print $conflicting_change->record_type . " "
+      . $conflicting_change->record_uuid . "\n";
 
     for my $prop_conflict ( @{ $conflicting_change->prop_conflicts } ) {
 
@@ -19,9 +21,8 @@ sub run {
         for (qw/target_value source_old_value source_new_value/) {
             $values{$_} = $prop_conflict->$_;
             $values{$_} = "(undefined)"
-                if !defined($values{$_});
+              if !defined( $values{$_} );
         }
-
 
         print "(T)ARGET     $values{target_value}\n";
         print "SOURCE (O)LD $values{source_old_value}\n";

@@ -32,7 +32,8 @@ sub edit {
             edit_callback   => 1,
             verify_callback => 1,
             tmpl_files      => 1,
-        });
+        }
+    );
 
     my $option    = shift @ARGV;
     my $tmpl_file = $args{tmpl_files}->{$option};
@@ -44,13 +45,13 @@ sub edit {
 
     # a bit of a hack to dermine whether the last arg is a filename
     my $replica_uuid =
-      File::Spec->file_name_is_absolute($ARGV[0]) ? undef : shift @ARGV;
+      File::Spec->file_name_is_absolute( $ARGV[0] ) ? undef : shift @ARGV;
     my $ticket_uuid =
-      File::Spec->file_name_is_absolute($ARGV[0]) ? undef : shift @ARGV;
+      File::Spec->file_name_is_absolute( $ARGV[0] ) ? undef : shift @ARGV;
 
     my @template = ();
     while (<>) {
-        chomp(my $line = $_);
+        chomp( my $line = $_ );
         push @template, $line;
 
         $args{edit_callback}(
@@ -84,8 +85,8 @@ Returns true if the templates match and false otherwise.
 =cut
 
 sub check_template_by_line {
-    my @template       = @{shift @_};
-    my @valid_template = @{shift @_};
+    my @template       = @{ shift @_ };
+    my @valid_template = @{ shift @_ };
     my $replica_uuid   = shift;
     my $ticket_uuid    = shift;
     my $errors         = shift;
@@ -97,12 +98,12 @@ sub check_template_by_line {
           if !defined($line);
 
         push @$errors, "[$line] doesn't match [$valid_line]"
-          if ($valid_line =~ /^qr\//)
+          if ( $valid_line =~ /^qr\// )
           ? $line !~ eval($valid_line)
           : $line eq $valid_line;
     }
 
-    return !(@$errors == 0);
+    return !( @$errors == 0 );
 }
 
 1;

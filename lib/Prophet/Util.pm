@@ -21,15 +21,15 @@ depth value.
 
 sub updir {
     my $self = shift;
-    my ($path, $depth) = validate_pos(@_, 1, {default => 1});
+    my ( $path, $depth ) = validate_pos( @_, 1, { default => 1 } );
     die "depth must be positive" unless $depth > 0;
 
-    my ($file, $dir, undef) = fileparse(File::Spec->rel2abs($path));
+    my ( $file, $dir, undef ) = fileparse( File::Spec->rel2abs($path) );
 
     $depth-- if $file;    # we stripped the file part
 
     if ($depth) {
-        $dir = File::Spec->catdir($dir, (File::Spec->updir) x $depth);
+        $dir = File::Spec->catdir( $dir, ( File::Spec->updir ) x $depth );
     }
 
     # if $dir doesn't exists in file system, abs_path will return empty
@@ -47,12 +47,12 @@ context.
 sub slurp {
     my $self    = shift;
     my $abspath = shift;
-    open(my $fh, "<", "$abspath") || die "$abspath: $!";
+    open( my $fh, "<", "$abspath" ) || die "$abspath: $!";
 
     my @lines = <$fh>;
     close $fh;
 
-    return wantarray ? @lines : join('', @lines);
+    return wantarray ? @lines : join( '', @lines );
 }
 
 =method instantiate_record class => 'record-class-name', uuid => 'record-uuid', app_handle => $self->app_handle
@@ -72,11 +72,13 @@ sub instantiate_record {
             uuid       => 1,
             app_handle => 1
 
-        });
+        }
+    );
     die $args{class} . " is not a valid class "
-      unless (UNIVERSAL::isa($args{class}, 'Prophet::Record'));
+      unless ( UNIVERSAL::isa( $args{class}, 'Prophet::Record' ) );
     my $object =
-      $args{class}->new(uuid => $args{uuid}, app_handle => $args{app_handle});
+      $args{class}
+      ->new( uuid => $args{uuid}, app_handle => $args{app_handle} );
     return $object;
 }
 
@@ -106,16 +108,16 @@ sub write_file {
     my %args = (@_);  #validate is too heavy to be called here
                       # my %args = validate( @_, { file => 1, content => 1 } );
 
-    my (undef, $parent, $filename) = File::Spec->splitpath($args{file});
-    unless (-d $parent) {
-        eval { mkpath([$parent]) };
-        if (my $msg = $@) {
+    my ( undef, $parent, $filename ) = File::Spec->splitpath( $args{file} );
+    unless ( -d $parent ) {
+        eval { mkpath( [$parent] ) };
+        if ( my $msg = $@ ) {
             die "Failed to create directory " . $parent . " - $msg";
         }
     }
 
-    open(my $fh, ">", $args{file}) || die $!;
-    print $fh scalar($args{'content'})
+    open( my $fh, ">", $args{file} ) || die $!;
+    print $fh scalar( $args{'content'} )
       ; # can't do "||" as we die if we print 0" || die "Could not write to " . $args{'path'} . " " . $!;
     close $fh || die $!;
 }
@@ -123,7 +125,7 @@ sub write_file {
 sub hashed_dir_name {
     my $hash = shift;
 
-    return (substr($hash, 0, 1), substr($hash, 1, 1), $hash);
+    return ( substr( $hash, 0, 1 ), substr( $hash, 1, 1 ), $hash );
 }
 
 sub catfile {
@@ -132,7 +134,7 @@ sub catfile {
     # File::Spec::catfile is more correct, but
     # eats over 10% of prophet app runtime,
     # which isn't acceptable.
-    return join('/', @_);
+    return join( '/', @_ );
 
 }
 

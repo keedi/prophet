@@ -10,12 +10,12 @@ as_alice {
     my $cli = Prophet::CLI->new();
     $cli->handle->initialize;
 
-    my $db_uuid = $cli->handle->db_uuid;
+    my $db_uuid      = $cli->handle->db_uuid;
     my $replica_uuid = $cli->handle->uuid;
     $alice_resolution_db_uuid = $cli->handle->resolution_db_handle->db_uuid;
     my $resolution_replica_uuid = $cli->handle->resolution_db_handle->uuid;
 
-    my $output = run_command( 'info' );
+    my $output     = run_command('info');
     my $exp_output = qr{Records Database
 ----------------
 Location:      file:///.*
@@ -31,7 +31,7 @@ Database UUID: $alice_resolution_db_uuid
 Replica UUID:  $resolution_replica_uuid
 Changesets:    0
 };
-    like ($output, $exp_output, 'info command output' );
+    like( $output, $exp_output, 'info command output' );
 };
 
 # regression test for 7A041904-66AB-11DD-AE9D-77633178437E
@@ -41,8 +41,8 @@ as_bob {
 
     my $bob_resolution_db_uuid = $cli->handle->resolution_db_handle->db_uuid;
 
-    my (undef, $error)
-        = run_command( 'pull', '--from', repo_uri_for('alice') );
+    my ( undef, $error ) =
+      run_command( 'pull', '--from', repo_uri_for('alice') );
     my $exp_error = <<"END_ERROR";
 You are trying to merge two different databases! This is NOT
 recommended. If you really want to do this,  add '--force' to

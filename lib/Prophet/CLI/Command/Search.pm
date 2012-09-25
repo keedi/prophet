@@ -15,7 +15,7 @@ has 'sort_routine' => (
     default => sub {
         sub {
             my $records = shift;
-            return (sort { $a->luid <=> $b->luid } @$records);
+            return ( sort { $a->luid <=> $b->luid } @$records );
           }
     },
     documentation =>
@@ -29,7 +29,7 @@ has group_routine => (
     default  => sub {
         sub {
             my $records = shift;
-            return [{label => '', records => $records}];
+            return [ { label => '', records => $records } ];
           }
     },
     documentation =>
@@ -38,7 +38,7 @@ has group_routine => (
 
 sub usage_msg {
     my $self = shift;
-    my ($cmd, $type_and_subcmd) = $self->get_cmd_and_subcmd_names;
+    my ( $cmd, $type_and_subcmd ) = $self->get_cmd_and_subcmd_names;
 
     return <<"END_USAGE";
 usage: ${cmd}${type_and_subcmd}
@@ -52,8 +52,8 @@ sub get_search_callback {
     my $self = shift;
 
     my %prop_checks;
-    for my $check ($self->prop_set) {
-        push @{$prop_checks{$check->{prop}}}, $check;
+    for my $check ( $self->prop_set ) {
+        push @{ $prop_checks{ $check->{prop} } }, $check;
     }
 
     my $regex = $self->arg('regex');
@@ -63,15 +63,16 @@ sub get_search_callback {
         my $props     = $item->get_props;
         my $did_limit = 0;
 
-        if ($self->prop_names > 0) {
+        if ( $self->prop_names > 0 ) {
             $did_limit = 1;
 
-            for my $prop (keys %prop_checks) {
+            for my $prop ( keys %prop_checks ) {
                 my $got = $props->{$prop};
                 my $ok  = 0;
-                for my $check (@{$prop_checks{$prop}}) {
+                for my $check ( @{ $prop_checks{$prop} } ) {
                     $ok = 1
-                      if $self->_compare($check->{value}, $check->{cmp}, $got);
+                      if $self->_compare( $check->{value}, $check->{cmp},
+                        $got );
                 }
                 return 0 if !$ok;
             }
@@ -82,7 +83,7 @@ sub get_search_callback {
             $did_limit = 1;
             my $ok = 0;
 
-            for (values %$props) {
+            for ( values %$props ) {
                 if (/$regex/) {
                     $ok = 1;
                     last;
@@ -99,17 +100,17 @@ sub get_search_callback {
 
 sub _compare {
     my $self = shift;
-    my ($expected, $cmp, $got) = @_;
+    my ( $expected, $cmp, $got ) = @_;
 
     $got = '' if !defined($got);    # avoid undef warnings
 
-    if ($cmp eq '=') {
+    if ( $cmp eq '=' ) {
         return 0 unless $got eq $expected;
-    } elsif ($cmp eq '=~') {
+    } elsif ( $cmp eq '=~' ) {
         return 0 unless $got =~ $expected;
-    } elsif ($cmp eq '!=' || $cmp eq '<>' || $cmp eq 'ne') {
+    } elsif ( $cmp eq '!=' || $cmp eq '<>' || $cmp eq 'ne' ) {
         return 0 if $got eq $expected;
-    } elsif ($cmp eq '!~') {
+    } elsif ( $cmp eq '!~' ) {
         return 0 if $got =~ $expected;
     }
 
@@ -140,11 +141,11 @@ sub display_terminal {
     my $self    = shift;
     my $records = shift;
 
-    my $groups = $self->group_routine->([$records->items]);
+    my $groups = $self->group_routine->( [ $records->items ] );
 
-    foreach my $group (@{$groups}) {
-        $self->out_group_heading($group, $groups);
-        $self->out_record($_) for $self->sort_routine->($group->{records});
+    foreach my $group ( @{$groups} ) {
+        $self->out_group_heading( $group, $groups );
+        $self->out_record($_) for $self->sort_routine->( $group->{records} );
     }
 
 }
@@ -160,7 +161,7 @@ sorted *after* all other records; otherwise, they are sorted before.
 =cut
 
 sub sort_by_prop {
-    my ($self, $prop, $records, $sort_undef_last) = @_;
+    my ( $self, $prop, $records, $sort_undef_last ) = @_;
 
     no warnings 'uninitialized';    # some records might not have this prop
 
@@ -168,14 +169,15 @@ sub sort_by_prop {
         sort {
             my $prop_a = $a->prop($prop);
             my $prop_b = $b->prop($prop);
-            if ($sort_undef_last && !defined($prop_a)) {
+            if ( $sort_undef_last && !defined($prop_a) ) {
                 return 1;
-            } elsif ($sort_undef_last && !defined($prop_b)) {
+            } elsif ( $sort_undef_last && !defined($prop_b) ) {
                 return -1;
             } else {
                 return $prop_a cmp $prop_b;
             }
-        } @{$records});
+        } @{$records}
+    );
 }
 
 =method group_by_prop $prop => $records
@@ -196,12 +198,12 @@ sub group_by_prop {
     my $results = {};
 
     for my $record (@$records) {
-        push @{$results->{($record->prop($prop) || '')}}, $record;
+        push @{ $results->{ ( $record->prop($prop) || '' ) } }, $record;
     }
 
     return [
 
-        map { {label => $_, records => $results->{$_}} } keys %$results
+        map { { label => $_, records => $results->{$_} } } keys %$results
 
     ];
 
@@ -220,7 +222,7 @@ sub out_group_heading {
     $group->{label} ||= 'none';
     print "\n"
       . $group->{label} . "\n"
-      . ("=" x length $group->{label}) . "\n\n";
+      . ( "=" x length $group->{label} ) . "\n\n";
 
 }
 

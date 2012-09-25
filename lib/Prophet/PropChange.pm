@@ -9,6 +9,7 @@ use Any::Moose;
 The name of the property we're talking about.
 
 =cut
+
 has name => (
     is  => 'rw',
     isa => 'Str',
@@ -19,6 +20,7 @@ has name => (
 What L</name> changed I<from>.
 
 =cut
+
 has old_value => (
     is  => 'rw',
     isa => 'Str|Undef',
@@ -29,6 +31,7 @@ has old_value => (
 What L</name> changed I<to>.
 
 =cut
+
 has new_value => (
     is  => 'rw',
     isa => 'Str|Undef',
@@ -40,9 +43,9 @@ sub summary {
     my $old  = $self->old_value;
     my $new  = $self->new_value;
 
-    if (!defined($old)) {
-        return qq{+ "$name" set to "} . ($new || '') . qq{"};
-    } elsif (!defined($new)) {
+    if ( !defined($old) ) {
+        return qq{+ "$name" set to "} . ( $new || '' ) . qq{"};
+    } elsif ( !defined($new) ) {
         return qq{- "$name" "$old" deleted.};
     }
 

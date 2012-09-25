@@ -7,16 +7,17 @@ use App::WebToy::Collection::WikiPage;
 template 'abc' => page {
     my $self = shift;
     my $c =
-      App::WebToy::Collection::WikiPage->new(app_handle => $self->app_handle);
-    $c->matching(sub { return 1 });
+      App::WebToy::Collection::WikiPage->new(
+        app_handle => $self->app_handle );
+    $c->matching( sub { return 1 } );
     my $r = $c->items->[0];
     h1 { $r->prop('title') };
 
     form {
-        my $f = function(record => $r, action => 'update');
-        my $w = widget(function => $f, prop => 'title');
-        widget(function => $f, prop => 'content');
-        input { attr {label => 'save', type => 'submit'} };
+        my $f = function( record => $r, action => 'update' );
+        my $w = widget( function => $f, prop => 'title' );
+        widget( function => $f, prop => 'content' );
+        input { attr { label => 'save', type => 'submit' } };
     };
 
     form {
@@ -26,9 +27,9 @@ template 'abc' => page {
             ),
             action => 'create'
         );
-        widget(function => $f, prop => 'title');
-        widget(function => $f, prop => 'content');
-        input { attr {label => 'save', type => 'submit'} };
+        widget( function => $f, prop => 'title' );
+        widget( function => $f, prop => 'content' );
+        input { attr { label => 'save', type => 'submit' } };
 
     }
 

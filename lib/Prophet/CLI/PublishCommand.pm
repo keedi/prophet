@@ -3,12 +3,14 @@ use Any::Moose 'Role';
 
 use File::Temp ();
 
-sub tempdir { my $dir = File::Temp::tempdir(CLEANUP => ! $ENV{PROPHET_DEBUG} ); return $dir; }
+sub tempdir {
+    my $dir = File::Temp::tempdir( CLEANUP => !$ENV{PROPHET_DEBUG} );
+    return $dir;
+}
 
 sub publish_dir {
     my $self = shift;
     my %args = @_;
-
 
     $args{from} .= '/';
 
@@ -30,6 +32,7 @@ W: will have the same permissions as the source replica, which is probably
 W: not what you want.)
 END_WARNING
     }
+
     # Set directories to be globally +rx, files to be globally +r
     # note - this frobs the permissions on the *sending* side; the
     # receiving side's umask is still applied -- this option just
@@ -38,7 +41,7 @@ END_WARNING
     # if those are more permissive than the original location
     push @args, '--chmod=Da+rx,a+r';
 
-    push @args, '--verbose' if $self->context->has_arg('verbose');
+    push @args, '--verbose'  if $self->context->has_arg('verbose');
     push @args, '--progress' if $self->context->has_arg('progress');
 
     # avoid edge cases when exporting replicas! still update files even
@@ -47,37 +50,37 @@ END_WARNING
     # ~easy for it to have the same size as it was previously and in test
     # cases we sometimes export to the same directory in quick succession)
     push @args, '--ignore-times';
-    
+
     if ( $^O =~ /MSWin/ ) {
         require Win32;
         for (qw/from to/) {
+
             # convert old 8.3 name
-            $args{$_} = Win32::GetLongPathName($args{$_});
+            $args{$_} = Win32::GetLongPathName( $args{$_} );
+
             # cwrsync uses cygwin
             $args{$_} =~ s!^([A-Z]):!'/cygdrive/' . lc $1!eg;
             $args{$_} =~ s!\\!/!g;
             $args{$_} = q{"} . $args{$_} . q{"};
         }
     }
-    
+
     push @args, '-e', $args{shell} if defined $args{shell};
 
-    push @args, '--recursive', '--' , $args{from}, $args{to};
+    push @args, '--recursive', '--', $args{from}, $args{to};
 
-    my $ret = system($rsync, @args);
+    my $ret = system( $rsync, @args );
 
-    if ($ret == -1) {
+    if ( $ret == -1 ) {
         die <<'END_DIE_MSG';
 You must have 'rsync' installed to use this command.
 
 If you have rsync but it's not in your path, set the environment variable
 $RSYNC to the absolute path of your rsync executable.
 END_DIE_MSG
-    }
-    elsif ($ret != 0) {
+    } elsif ( $ret != 0 ) {
         die "Publish NOT completed! (rsync failed with return value $ret)\n";
-    }
-    else {
+    } else {
         return $ret;
     }
 }

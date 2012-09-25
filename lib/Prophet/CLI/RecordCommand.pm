@@ -34,7 +34,7 @@ with a stack trace on failure.
 
 sub _get_record_object {
     my $self = shift;
-    my %args = validate(@_, {type => {default => $self->type},});
+    my %args = validate( @_, { type => { default => $self->type }, } );
 
     my $constructor_args = {
         app_handle => $self->cli->app_handle,
@@ -42,10 +42,10 @@ sub _get_record_object {
         type       => $args{type},
     };
 
-    if ($args{type}) {
-        my $class = $self->_type_to_record_class($args{type});
+    if ( $args{type} ) {
+        my $class = $self->_type_to_record_class( $args{type} );
         return $class->new($constructor_args);
-    } elsif (my $class = $self->record_class) {
+    } elsif ( my $class = $self->record_class ) {
         Prophet::App->require($class);
         return $class->new($constructor_args);
     } else {
@@ -67,11 +67,11 @@ be found.
 sub _load_record {
     my $self   = shift;
     my $record = $self->_get_record_object;
-    $record->load(uuid => $self->uuid);
+    $record->load( uuid => $self->uuid );
 
-    if (!$record->exists) {
+    if ( !$record->exists ) {
         $self->fatal_error(
-            "I couldn't find a " . $self->type . ' with that id.');
+            "I couldn't find a " . $self->type . ' with that id.' );
     }
     return $record;
 }
@@ -86,13 +86,13 @@ C<'Prophet::Record'> if no better class name is found.
 sub _type_to_record_class {
     my $self = shift;
     my $type = shift;
-    my $try  = $self->cli->app_class . "::Model::" . ucfirst(lc($type));
+    my $try  = $self->cli->app_class . "::Model::" . ucfirst( lc($type) );
     Prophet::App->try_to_require($try);    # don't care about fails
-    return $try if ($try->isa('Prophet::Record'));
+    return $try if ( $try->isa('Prophet::Record') );
 
     $try = $self->cli->app_class . "::Record";
     Prophet::App->try_to_require($try);    # don't care about fails
-    return $try if ($try->isa('Prophet::Record'));
+    return $try if ( $try->isa('Prophet::Record') );
     return 'Prophet::Record';
 }
 

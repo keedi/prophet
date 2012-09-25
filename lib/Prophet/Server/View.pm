@@ -6,6 +6,7 @@ use base 'Template::Declare';
 
 use Template::Declare::Tags;
 use URI::file;
+
 # Prophet::Server::ViewHelpers overwrites the form {} function provided by
 # Template::Declare::Tags. ViewHelpers uses Exporter::Lite which does not "use
 # warnings". When prove -w or make test is run, $^W is set which turns on
@@ -19,7 +20,8 @@ BEGIN {
     local $SIG{__WARN__} = sub {
         my $warning = shift;
         $old_warn->($warning)
-            unless $warning =~ /Subroutine Prophet::Server::View::form redefined /;
+          unless $warning =~
+          /Subroutine Prophet::Server::View::form redefined /;
     };
     require Prophet::Server::ViewHelpers;
     Prophet::Server::ViewHelpers->import;
@@ -28,6 +30,7 @@ use Params::Validate;
 use Prophet::Web::Menu;
 
 our $APP_HANDLE;
+
 sub app_handle {
     my $self = shift;
     $APP_HANDLE = shift if (@_);
@@ -35,6 +38,7 @@ sub app_handle {
 }
 
 our $CGI;
+
 sub cgi {
     my $self = shift;
     $CGI = shift if (@_);
@@ -42,6 +46,7 @@ sub cgi {
 }
 
 our $MENU;
+
 sub page_nav {
     my $self = shift;
     $MENU = shift if (@_);
@@ -49,14 +54,13 @@ sub page_nav {
 }
 
 our $SERVER;
+
 sub server {
     my $self = shift;
     $SERVER = shift if (@_);
     return $SERVER;
 
 }
-
-
 
 template '_prophet_autocompleter' => sub {
     my $self = shift;
@@ -70,7 +74,7 @@ template '_prophet_autocompleter' => sub {
         app_handle => $self->app_handle
     );
     my @possible;
-    if ( $obj) {
+    if ($obj) {
         my $canon = { $args{prop} => $args{q} };
         $obj->canonicalize_prop( $args{'prop'}, $canon, {} );
         if ( $canon->{ $args{prop} } ne $args{q} ) {
@@ -97,22 +101,33 @@ template '_prophet_autocompleter' => sub {
 
 };
 
-
-
-sub default_page_title { 'Prophet' }
+sub default_page_title {'Prophet'}
 
 template head => sub {
     my $self = shift;
     my @args = shift;
     head {
-        meta { attr { content => "text/html; charset=utf-8",
-                      'http-equiv' => "Content-Type" }};
+        meta {
+            attr {
+                content      => "text/html; charset=utf-8",
+                'http-equiv' => "Content-Type"
+            };
+        };
         title { shift @args };
         for ( $self->server->css ) {
-            link { { rel is 'stylesheet', href is link_to($_), type is "text/css", media is 'screen'} };
+            link {
+                {
+                    rel is 'stylesheet',
+                    href is link_to($_),
+                    type is "text/css",
+                    media is 'screen'
+                }
+            };
         }
         for ( $self->server->js ) {
-            script { { src is link_to($_), type is "text/javascript" } };
+            script {
+                { src is link_to($_), type is "text/javascript" }
+            };
         }
     }
 
@@ -120,26 +135,29 @@ template head => sub {
 
 template footer => sub { };
 template header => sub {
-    my $self = shift;
+    my $self  = shift;
     my $title = shift;
-if ($self->page_nav) {
-    div { { class is 'page-nav'};
-        outs_raw($self->page_nav->render_as_menubar);
-    };
+    if ( $self->page_nav ) {
+        div {
+            { class is 'page-nav' };
+            outs_raw( $self->page_nav->render_as_menubar );
+        };
     }
-    h1 { $title };
+    h1 {$title};
 };
 
-
 template '/' => page {
-            h1 { "This is a Prophet replica!" }
+    h1 {"This is a Prophet replica!"};
 };
 
 sub record_table {
-    my %args = validate(@_, {
-        records    => 1,
-        url_prefix => { default => '' },
-    });
+    my %args = validate(
+        @_,
+        {
+            records    => 1,
+            url_prefix => { default => '' },
+        }
+    );
 
     my $records = $args{records};
     my $prefix  = $args{url_prefix};
@@ -150,37 +168,32 @@ sub record_table {
             my @headers = $items[0]->_parse_format_summary;
             row {
                 for (@headers) {
-                    th { $_->{prop} }
+                    th { $_->{prop} };
                 }
             }
         }
 
-        for my $record (sort { $a->luid <=> $b->luid } @items) {
-            my $type = $record->type;
-            my $uuid = $record->uuid;
+        for my $record ( sort { $a->luid <=> $b->luid } @items ) {
+            my $type  = $record->type;
+            my $uuid  = $record->uuid;
             my @atoms = $record->format_summary;
 
             row {
                 attr { id => "$type-$uuid", class => "$type" };
 
-                for my $i (0 .. $#atoms) {
+                for my $i ( 0 .. $#atoms ) {
                     my $atom = $atoms[$i];
                     my $prop = $atom->{prop};
 
                     cell {
-                        attr {
-                            class => "prop-$prop",
-                        };
+                        attr { class => "prop-$prop", };
 
-                        if ($i == 0) {
+                        if ( $i == 0 ) {
                             a {
-                                attr {
-                                    href => link_to("$prefix$uuid.html"),
-                                };
+                                attr { href => link_to("$prefix$uuid.html"), };
                                 outs $atom->{value};
                             }
-                        }
-                        else {
+                        } else {
                             outs $atom->{value};
                         }
                     }
@@ -190,74 +203,65 @@ sub record_table {
     }
 }
 
-template record_table => 
+template record_table =>
 
-        page {
-    my $self = shift;
+  page {
+    my $self    = shift;
     my $records = shift;
-            record_table(records => $records);
-};
+    record_table( records => $records );
+  };
 
 template record => page {
-    my $self = shift;
+    my $self   = shift;
     my $record = shift;
 
-            p {
-                a {
-                    attr {
-                        href => link_to("index.html"),
-                    };
-                    outs "index";
-                }
-            }
-            hr {}
-            dl {
-                dt { 'UUID' }
-                dd { $record->uuid }
-                dt { 'LUID' }
-                dd { $record->luid };
+    p {
+        a {
+            attr { href => link_to("index.html"), };
+            outs "index";
+        }
+    }
+    hr {} dl {
+        dt {'UUID'} dd { $record->uuid } dt {'LUID'} dd { $record->luid };
 
-                my $props = $record->get_props;
-                for my $prop (sort keys %$props) {
-                    dt { $prop }
-                    dd { $props->{$prop} }
-                }
-            };
+        my $props = $record->get_props;
+        for my $prop ( sort keys %$props ) {
+            dt {$prop} dd { $props->{$prop} };
+        }
+    };
 
-            hr {}
-            h3 { "History" };
+    hr {} h3 {"History"};
 
-            show record_changesets => $record;
+    show record_changesets => $record;
 
-            # linked collections
-            for my $method ($record->collection_reference_methods) {
-                my $collection = $record->$method;
-                next if $collection->count == 0;
+    # linked collections
+    for my $method ( $record->collection_reference_methods ) {
+        my $collection = $record->$method;
+        next if $collection->count == 0;
 
-                my $type = $collection->record_class->type;
+        my $type = $collection->record_class->type;
 
-                hr {}
-                h3 { "Linked $type records" }
+        hr {} h3 {"Linked $type records"}
 
-                record_table(
-                    records    => $collection,
-                    url_prefix => "../$type/",
-                );
-            }
+        record_table(
+            records    => $collection,
+            url_prefix => "../$type/",
+        );
+    }
 
 };
 
 private template record_changesets => sub {
-    my $self = shift;
+    my $self   = shift;
     my $record = shift;
-    my $uuid = $record->uuid;
+    my $uuid   = $record->uuid;
 
     ol {
-        for my $change ($record->changes) {
+        for my $change ( $record->changes ) {
             my @prop_changes = $change->prop_changes;
             next if @prop_changes == 0;
 
-            if (@prop_changes == 1) {
+            if ( @prop_changes == 1 ) {
                 li { $prop_changes[0]->summary };
                 next;
             }
@@ -273,14 +277,17 @@ private template record_changesets => sub {
             }
         }
     }
-        };
+};
 
 sub generate_changeset_feed {
     my $self = shift;
-    my %args = validate(@_, {
-        handle => 1,
-        title  => 0,
-    });
+    my %args = validate(
+        @_,
+        {
+            handle => 1,
+            title  => 0,
+        }
+    );
 
     my $handle = $args{handle};
     my $title = $args{title} || 'Prophet replica ' . $handle->uuid;
@@ -294,7 +301,7 @@ sub generate_changeset_feed {
     );
 
     my $newest = $handle->latest_sequence_no;
-    my $start = $newest - 20;
+    my $start  = $newest - 20;
     $start = 0 if $start < 0;
 
     $handle->traverse_changesets(
@@ -303,6 +310,7 @@ sub generate_changeset_feed {
             my %args = (@_);
             $feed->add_entry(
                 title => 'Changeset ' . $args{changeset}->sequence_no,
+
                 # need uuid or absolute link :(
                 category => 'Changeset',
             );
@@ -313,8 +321,8 @@ sub generate_changeset_feed {
 }
 
 sub link_to ($) {
-	my $link = shift;
-    return URI::file->new($link)->rel("file://".$ENV{REQUEST_URI});
+    my $link = shift;
+    return URI::file->new($link)->rel( "file://" . $ENV{REQUEST_URI} );
 }
 1;
 

@@ -39,18 +39,20 @@ sub run {
         Prophet::Replica->get_handle(
             url        => $self->arg('from'),
             app_handle => $self->app_handle,
-        )) unless $self->source;    # subclass may already have set source
+        )
+    ) unless $self->source;    # subclass may already have set source
 
     $self->target(
         Prophet::Replica->get_handle(
             url        => $self->arg('to'),
             app_handle => $self->app_handle,
-        )) unless $self->target;    # subclass may already have set target
+        )
+    ) unless $self->target;    # subclass may already have set target
 
-    $self->validate_merge_replicas($self->source => $self->target);
+    $self->validate_merge_replicas( $self->source => $self->target );
 
     if (   $self->source->can('read_changeset_index')
-        && $self->target->url eq $self->app_handle->handle->url)
+        && $self->target->url eq $self->app_handle->handle->url )
     {
         #   my $original_source = $self->source;
         #   $self->source($self->get_cache_for_source($original_source));
@@ -63,7 +65,7 @@ sub run {
         from           => $self->source,
         force          => $self->has_arg('force'),
         resolver_class => 'Prophet::Resolver::Prompt',
-    ) if ($self->source->resolution_db_handle);
+    ) if ( $self->source->resolution_db_handle );
 
     my $changesets = $self->_do_merge();
 
@@ -74,10 +76,10 @@ sub run {
 sub print_report {
     my $self       = shift;
     my $changesets = shift;
-    if ($self->has_arg('verbose')) {
-        if ($changesets == 0) {
+    if ( $self->has_arg('verbose') ) {
+        if ( $changesets == 0 ) {
             print "No new changesets.\n";
-        } elsif ($changesets == 1) {
+        } elsif ( $changesets == 1 ) {
             print "Merged one changeset.\n";
         } else {
             print "Merged $changesets changesets.\n";
@@ -107,7 +109,7 @@ sub _do_merge {
     my ($self) = @_;
 
     my $last_seen_from_source =
-      $self->target->last_changeset_from_source($self->source->uuid);
+      $self->target->last_changeset_from_source( $self->source->uuid );
     my %import_args = (
         from           => $self->source,
         resdb          => $self->app_handle->handle->resolution_db_handle,
@@ -117,23 +119,24 @@ sub _do_merge {
 
     my $changesets = 0;
 
-    if ($self->has_arg('dry-run')) {
+    if ( $self->has_arg('dry-run') ) {
 
         $self->source->traverse_changesets(
             after                          => $last_seen_from_source,
             before_load_changeset_callback => sub {
                 my %args = (@_);
                 my $data = $args{changeset_metadata};
-                my ($seq, $orig_uuid, $orig_seq, $key) = @$data;
+                my ( $seq, $orig_uuid, $orig_seq, $key ) = @$data;
 
                 # skip changesets we've seen before
                 if (
                     $self->target->has_seen_changeset(
                         source_uuid => $orig_uuid,
                         sequence_no => $orig_seq
-                    ))
+                    )
+                  )
                 {
-                    return undef;
+                    return;
                 } else {
                     return 1;
                 }
@@ -141,14 +144,17 @@ sub _do_merge {
             },
             callback => sub {
                 my %args = (@_);
-                if ($self->target->should_accept_changeset($args{changeset})) {
+                if ( $self->target->should_accept_changeset( $args{changeset} )
+                  )
+                {
                     print $args{changeset}->as_string;
                 }
-            });
+            }
+        );
 
     } else {
         my $source_latest = $self->source->latest_sequence_no() || 0;
-        if ($self->has_arg('verbose')) {
+        if ( $self->has_arg('verbose') ) {
             print "Integrating changes from "
               . $last_seen_from_source . " to "
               . $source_latest . "\n";
@@ -159,7 +165,7 @@ sub _do_merge {
             };
         } else {
             $import_args{reporting_callback} = $self->progress_bar(
-                max    => ($source_latest - $last_seen_from_source),
+                max    => ( $source_latest - $last_seen_from_source ),
                 format => "%30b %p %E\r"
             );
         }
@@ -173,25 +179,25 @@ sub validate_merge_replicas {
     my $source = shift;
     my $target = shift;
 
-    if (!$target->replica_exists) {
+    if ( !$target->replica_exists ) {
         $self->handle->log_fatal(
-            "The target (" . $self->arg('to') . ") replica doesn't exist");
+            "The target (" . $self->arg('to') . ") replica doesn't exist" );
     }
 
-    if (!$source->replica_exists) {
+    if ( !$source->replica_exists ) {
         $self->handle->log_fatal(
-            "The source (" . $self->arg('from') . ") replica doesn't exist");
+            "The source (" . $self->arg('from') . ") replica doesn't exist" );
     }
 
-    if ($target->uuid eq $source->uuid) {
+    if ( $target->uuid eq $source->uuid ) {
         $self->handle->log_fatal(
             "You appear to be trying to merge two identical replicas. Skipping."
         );
     }
 
-    if (!$target->can_write_changesets) {
-        $self->handle->log_fatal($target->url
-              . " does not accept changesets. Perhaps it's unwritable.");
+    if ( !$target->can_write_changesets ) {
+        $self->handle->log_fatal( $target->url
+              . " does not accept changesets. Perhaps it's unwritable." );
     }
 
     return 1;

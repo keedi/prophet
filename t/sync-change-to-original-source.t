@@ -1,10 +1,9 @@
 #!/usr/bin/perl -w
 use strict;
 
-
 BEGIN {
-#$ENV{'PROPHET_REPLICA_TYPE'} = 'prophet';
-};
+    #$ENV{'PROPHET_REPLICA_TYPE'} = 'prophet';
+}
 
 use Prophet::Test::Arena;
 

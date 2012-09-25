@@ -5,9 +5,7 @@ with 'Prophet::CLI::Dispatcher::Rule';
 
 use Prophet::CLIContext;
 
-has '+regex' => (
-    default => sub { qr/^$Prophet::CLIContext::ID_REGEX$/i },
-);
+has '+regex' => ( default => sub {qr/^$Prophet::CLIContext::ID_REGEX$/i} );
 
 has type => (
     is  => 'ro',
@@ -24,13 +22,13 @@ sub complete {
 
     my @ids;
     for my $type (@types) {
-        push @ids,
-            grep { substr($_, 0, length($path)) eq $path }
-            map { ($_->uuid, $_->luid) }
-            @{ $handle->list_records(
+        push @ids, grep { substr( $_, 0, length($path) ) eq $path }
+          map { ( $_->uuid, $_->luid ) } @{
+            $handle->list_records(
                 type         => $type,
                 record_class => $self->cli->record_class,
-            ) };
+            )
+          };
     }
     return @ids;
 }

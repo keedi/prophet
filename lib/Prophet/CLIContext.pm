@@ -2,12 +2,12 @@ package Prophet::CLIContext;
 use Any::Moose;
 
 has app_handle => (
-    is      => 'rw',
-    isa     => 'Prophet::App',
-    lazy    => 1,
-    handles => [qw/handle resdb_handle config/],
+    is       => 'rw',
+    isa      => 'Prophet::App',
+    lazy     => 1,
+    handles  => [qw/handle resdb_handle config/],
     weak_ref => 1,
-    default => sub {
+    default  => sub {
         return $_[0]->app_class->new;
     },
 );
@@ -26,37 +26,36 @@ has type => (
 );
 
 has args => (
-    is        => 'rw',
-    isa       => 'HashRef',
-    default   => sub { {} },
+    is      => 'rw',
+    isa     => 'HashRef',
+    default => sub { {} },
     documentation =>
-        "This is a reference to the key-value pairs passed in on the commandline",
+      "This is a reference to the key-value pairs passed in on the commandline",
 );
 
 has raw_args => (
-    is => 'rw',
-    isa => 'ArrayRef',
-    default => sub {[]},
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    default => sub { [] },
 );
 
-
-sub set_arg    { $_[0]->args->{$_[1]} = $_[2] }
-sub arg        { $_[0]->args->{$_[1]} }
-sub has_arg    { exists $_[0]->args->{$_[1]} }
-sub delete_arg { delete $_[0]->args->{$_[1]} }
+sub set_arg { $_[0]->args->{ $_[1] } = $_[2] }
+sub arg     { $_[0]->args->{ $_[1] } }
+sub has_arg { exists $_[0]->args->{ $_[1] } }
+sub delete_arg { delete $_[0]->args->{ $_[1] } }
 sub arg_names  { keys %{ $_[0]->args } }
 sub clear_args { %{ $_[0]->args } = () }
 
 has props => (
-    is        => 'rw',
-    isa       => 'HashRef',
-    default   => sub { {} },
+    is      => 'rw',
+    isa     => 'HashRef',
+    default => sub { {} },
 );
 
-sub set_prop    { $_[0]->props->{$_[1]} = $_[2] }
-sub prop        { $_[0]->props->{$_[1]} }
-sub has_prop    { exists $_[0]->props->{$_[1]} }
-sub delete_prop { delete $_[0]->props->{$_[1]} }
+sub set_prop { $_[0]->props->{ $_[1] } = $_[2] }
+sub prop     { $_[0]->props->{ $_[1] } }
+sub has_prop { exists $_[0]->props->{ $_[1] } }
+sub delete_prop { delete $_[0]->props->{ $_[1] } }
 sub prop_names  { keys %{ $_[0]->props } }
 
 sub clear_props {
@@ -125,7 +124,7 @@ sub mutate_attributes {
     }
 
     if ( my $primary_commands = $args{ $self->primary_commands } ) {
-        $self->primary_commands( $primary_commands );
+        $self->primary_commands($primary_commands);
     }
 }
 
@@ -154,7 +153,7 @@ looks like an @ARGV.
 
 sub setup_from_args {
     my $self = shift;
-    $self->raw_args([@_]);
+    $self->raw_args( [@_] );
     $self->parse_args(@_);
     $self->set_type_and_uuid();
 
@@ -188,7 +187,7 @@ sub parse_args {
 
     while ( my $name = shift @args ) {
         die "$name doesn't look like --argument\n"
-            if !$collecting_props && $name !~ /^-/;
+          if !$collecting_props && $name !~ /^-/;
 
         if ( $name eq '--' || $name eq '--props' ) {
             $collecting_props = 1;
@@ -199,14 +198,14 @@ sub parse_args {
         my $val;
 
         ( $name, $cmp, $val ) = ( $1, $2, $3 )
-            if $name =~ /^(.*?)($cmp_re)(.*)$/;
+          if $name =~ /^(.*?)($cmp_re)(.*)$/;
         $name =~ s/^(?:--|-)//;
 
         # no value specified, pull it from the next argument, unless the next
         # argument is another option
         if ( !defined($val) ) {
             $val = shift @args
-                if @args && $args[0] !~ /^-/;
+              if @args && $args[0] !~ /^-/;
 
             no warnings 'uninitialized';
 
@@ -226,7 +225,8 @@ sub parse_args {
 
         if ($collecting_props) {
             $self->add_to_prop_set(
-                {   prop  => $name,
+                {
+                    prop  => $name,
                     cmp   => $cmp,
                     value => $val,
                 }
@@ -260,19 +260,17 @@ sub set_uuid {
     if ( my $id = $self->delete_arg('id') ) {
         if ( $id =~ /^(\d+)$/ ) {
             $self->set_arg( luid => $id );
-        }
-        else {
+        } else {
             $self->set_arg( uuid => $id );
         }
     }
 
     if ( my $uuid = $self->delete_arg('uuid') ) {
         $self->uuid($uuid);
-    }
-    elsif ( my $luid = $self->delete_arg('luid') ) {
+    } elsif ( my $luid = $self->delete_arg('luid') ) {
         my $uuid = $self->handle->find_uuid_by_luid( luid => $luid );
         die "I have no UUID mapped to the local id '$luid'\n"
-            if !defined($uuid);
+          if !defined($uuid);
         $self->uuid($uuid);
     }
 }
@@ -283,33 +281,34 @@ sub set_type {
     if ( my $type = $self->delete_arg('type') ) {
         $self->type($type);
     }
+
     # allowance for things like ticket show 77, where 'ticket' is the type
-    elsif ( $self->primary_commands->[-1] &&
-        $self->primary_commands->[-1] =~ qr/^$Prophet::CLIContext::ID_REGEX$/i
-            && $self->primary_commands->[-3] ) {
+    elsif ($self->primary_commands->[-1]
+        && $self->primary_commands->[-1] =~
+        qr/^$Prophet::CLIContext::ID_REGEX$/i
+        && $self->primary_commands->[-3] )
+    {
         $self->type( $self->primary_commands->[-3] );
-    }
-    elsif ( $self->primary_commands->[-2] ) {
+    } elsif ( $self->primary_commands->[-2] ) {
         $self->type( $self->primary_commands->[-2] );
     }
 }
 
 sub set_id_from_primary_commands {
     my $self = shift;
-    
-    if ( (my $id = pop @{$self->primary_commands}) =~ $ID_REGEX ) {
+
+    if ( ( my $id = pop @{ $self->primary_commands } ) =~ $ID_REGEX ) {
         $self->set_id($id);
     }
 
 }
+
 sub set_id {
     my $self = shift;
-    my $id = shift;
+    my $id   = shift;
     $self->set_arg( id => $id );
     $self->set_uuid;
 }
-
-
 
 __PACKAGE__->meta->make_immutable;
 no Any::Moose;

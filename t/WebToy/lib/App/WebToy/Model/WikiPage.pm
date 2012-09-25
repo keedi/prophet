@@ -1,7 +1,7 @@
 package App::WebToy::Model::WikiPage;
 use Any::Moose;
 extends 'Prophet::Record';
-has type => (default => 'wikipage');
+has type => ( default => 'wikipage' );
 
 sub declared_props {qw(title content tags mood)}
 

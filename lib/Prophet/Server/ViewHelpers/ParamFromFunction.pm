@@ -3,8 +3,8 @@ package Prophet::Server::ViewHelpers::ParamFromFunction;
 use Template::Declare::Tags;
 
 BEGIN {
-    delete ${__PACKAGE__ . "::"}{meta};
-    delete ${__PACKAGE__ . "::"}{with};
+    delete ${ __PACKAGE__ . "::" }{meta};
+    delete ${ __PACKAGE__ . "::" }{with};
 }
 
 use Any::Moose;
@@ -41,9 +41,10 @@ sub render {
             record => $record,
             value  => $value
 
-        ));
+        )
+    );
 
-    outs_raw($self->field->render_input);
+    outs_raw( $self->field->render_input );
 }
 
 sub _generate_name {
