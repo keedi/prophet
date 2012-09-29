@@ -9,7 +9,7 @@ use UUID::Tiny ':std';
 =attr uuid_scheme
 
 Gets or sets the UUID scheme; if 1, then creates v1 and v3 UUIDs (for backward
-compatability with earlier versions of Prophet).  If 2, it creates v4 and v5
+compatibility with earlier versions of Prophet).  If 2, it creates v4 and v5
 UUIDs.
 
 =cut

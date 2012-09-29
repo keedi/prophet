@@ -220,7 +220,7 @@ sub children {
 =method render_as_menubar [PARAMHASH]
 
 Render menubar with YUI menu, suitable for an application's menu. It can
-support arbitary levels of submenu.
+support arbitrary levels of submenu.
 
 =cut
 
