@@ -3,6 +3,7 @@ use Any::Moose;
 
 extends 'Prophet::FilesystemReplica';
 use Params::Validate ':all';
+use File::Spec;
 
 has '+db_uuid' => (
     lazy    => 1,
@@ -161,6 +162,16 @@ sub initialize_from_source {
 
 sub _on_initialize_create_paths {
     my $self = shift;
+    my %args = validate(
+        @_,
+        {
+            db_uuid            => 1,
+            replica_uuid       => 1,
+            resdb_uuid         => 0,
+            resdb_replica_uuid => 0,
+        }
+    );
+
     return (
         $self->cas_root,
         $self->changeset_cas_dir,

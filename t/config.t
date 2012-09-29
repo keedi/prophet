@@ -45,7 +45,7 @@ is( scalar @keys, 0, 'no config options are set' );
     $conf->load;
 
     # make sure we only have the one test config file loaded
-    is( length @{ $conf->config_files }, 1, 'only test conf is loaded' );
+    is( scalar @{ $conf->config_files }, 1, 'only test conf is loaded' );
 
     # interrogate its config to see if we have any config options set
     my @data = $conf->dump;
